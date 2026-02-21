@@ -1,9 +1,18 @@
 # 🌟 Harp * Star Media Mind Master 🌟
 
+<p align="center">
+  <img src="assets/logo.svg" width="200" alt="Harp*Star Logo" />
+</p>
+
 > **The Ultimate Multi-Root Intelligence & Media Orchestration Nexus.**  
 > *Sovereignty through automated intelligence. Protected by the Harp*Star Protocol.*
 
 ---
+
+## ⚡ System Status: FULLY OPERATIONAL
+
+Current Logic Build: `v2.5.2-Genesis`  
+Security: **Harp*Star Lockdown Active**
 
 ## 1. Project Overview
 
