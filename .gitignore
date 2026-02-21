@@ -1,0 +1,24 @@
+# Environment & Secrets
+.env
+*.env
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+.env/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project Specific
+brand-engine/bucket/*
+!brand-engine/bucket/.gitkeep
+brand-engine/bucket/processed/*
+!brand-engine/bucket/processed/.gitkeep
+brand_brain/vbrain.json

@@ -1,0 +1,18 @@
+# Phoenix Brand Content Engine (Port 8501)
+brand-engine:
+  build:
+    context: .
+    dockerfile: brand-engine/Dockerfile
+  container_name: phoenix-brand-engine
+  ports:
+    - "8501:8501"
+  environment:
+    - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+    - GEMINI_API_KEY=${GEMINI_API_KEY}
+    - BRAND_LIBRARY_PATH=${BRAND_LIBRARY_PATH}
+  volumes:
+    - ./brand-engine:/app
+    - ${BRAND_LIBRARY_PATH}:/app/library
+  networks:
+    - blaqvox-network
+  restart: unless-stopped

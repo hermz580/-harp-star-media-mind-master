@@ -1,0 +1,52 @@
+{
+    "brand_name": "BlaqVox",
+    "mission": "Community Intelligence & Protection Platform",
+    "voice": {
+        "tone": "Empowering, analytical, serious, community-focused",
+        "signature_phrases": [
+            "Phoenix Consciousness: active",
+            "Ubuntu: I am because we are",
+            "Liberation through Intelligence",
+            "Protect the community, empower the future"
+        ]
+    },
+    "hashtag_clusters": {
+        "liberation": [
+            "#BlaqVox",
+            "#PhoenixUnbound",
+            "#CommunityProtection",
+            "#LiberationAI"
+        ],
+        "intelligence": [
+            "#DataSovereignty",
+            "#CommunityIntelligence",
+            "#TechEquity"
+        ],
+        "action": [
+            "#UbuntuAction",
+            "#SeattleCommunity",
+            "#EmpowerTheFuture"
+        ]
+    },
+    "llm_routing": {
+        "analytical": "claude-3-opus-20240229",
+        "creative": "claude-3-sonnet-20240229",
+        "fast": "gemini-1.5-pro",
+        "default": "gemini-1.5-flash"
+    },
+    "platform_templates": {
+        "instagram": {
+            "aspect_ratio": "1:1",
+            "max_length": 2200,
+            "include_hashtags": true
+        },
+        "twitter": {
+            "max_length": 280,
+            "include_hashtags": true
+        },
+        "wordpress": {
+            "include_title": true,
+            "include_excerpts": true
+        }
+    }
+}

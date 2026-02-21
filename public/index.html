@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Advanced Multi-Root Intelligence Command Center</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#6366f1",
+                        "secondary": "#06b6d4",
+                        "accent": "#d946ef",
+                        "background-dark": "#02040a",
+                        "surface-dark": "#0a0f1e",
+                        "plasma-dark": "#131b2e",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"],
+                        "mono": ["monospace"]
+                    },
+                    backgroundImage: {
+                        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+                        'glass': 'linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%)',
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #02040a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 3px;
+        }
+
+        .glass-panel {
+            background: rgba(10, 15, 30, 0.7);
+            -webkit-backdrop-filter: blur(16px);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes color-flow {
+            0% {
+                color: #6366f1;
+            }
+
+            33% {
+                color: #06b6d4;
+            }
+
+            66% {
+                color: #d946ef;
+            }
+
+            100% {
+                color: #6366f1;
+            }
+        }
+
+        @keyframes float-hover {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .master-brand-title {
+            animation: color-flow 6s infinite linear, float-hover 3s ease-in-out infinite;
+            display: inline-block;
+            cursor: default;
+        }
+
+        .industrial-btn {
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
+            transition: all 0.2s ease;
+        }
+
+        .loader {
+            width: 14px;
+            height: 14px;
+            border: 2px solid #FFF;
+            border-bottom-color: transparent;
+            border-radius: 50%;
+            display: inline-block;
+            animation: rotation 1s linear infinite;
+        }
+
+        @keyframes rotation {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .focus-box {
+            background: linear-gradient(90deg, rgba(99, 102, 241, 0.1), rgba(6, 182, 212, 0.1));
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        #lockdown-screen {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: black;
+            z-index: 9999;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #ef4444;
+            font-family: monospace;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body
+    class="bg-background-dark text-slate-200 font-display min-h-screen flex flex-col overflow-hidden selection:bg-primary selection:text-white">
+
+    <div id="lockdown-screen">
+        <span class="material-symbols-outlined text-9xl animate-pulse mb-8">security</span>
+        <h1 class="text-4xl font-bold mb-4">CRITICAL SYSTEM ERROR</h1>
+        <p class="text-xl">INTELLECTUAL PROPERTY PROTECTION ENGAGED.</p>
+        <p class="text-sm mt-4 opacity-50">Authorized system signature mismatch. Access Revoked.</p>
+    </div>
+
+    <header
+        class="h-16 border-b border-white/5 bg-background-dark/80 backdrop-blur-xl flex items-center justify-between px-6 z-30 relative shrink-0">
+        <div class="flex items-center gap-5">
+            <div
+                class="size-9 rounded-lg bg-surface-dark flex items-center justify-center border border-white/10 shadow-lg shadow-primary/10">
+                <span class="material-symbols-outlined text-secondary">star</span>
+            </div>
+            <div>
+                <h1 id="sys-name"
+                    class="text-white text-lg font-bold tracking-tight leading-none uppercase master-brand-title">Harp *
+                    Star Media Mind Master</h1>
+                <div class="flex items-center gap-3 mt-1">
+                    <span class="text-[10px] text-secondary font-mono tracking-wider">GENESIS_MODE: ACTIVE</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Focus Tool -->
+        <div class="flex-1 max-w-xl mx-8">
+            <div class="focus-box rounded-lg flex items-center px-4 py-1.5 gap-3 border border-primary/30">
+                <span class="material-symbols-outlined text-primary text-[20px]">target</span>
+                <input id="focus-input" type="text" placeholder="Set Global Intelligence Focus..."
+                    class="bg-transparent border-none text-xs text-indigo-100 w-full focus:ring-0 placeholder-indigo-300/50"
+                    onchange="updateFocus(this.value)" />
+            </div>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <button onclick="discoverSystem()"
+                class="industrial-btn h-8 px-3 rounded flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-white">
+                <span class="material-symbols-outlined text-[14px] text-amber-500">search_check</span>
+                SCAN SYSTEM
+            </button>
+            <button id="sync-btn" onclick="executeSync()"
+                class="rounded bg-primary/20 border border-primary/50 px-5 py-2 text-white text-xs font-bold tracking-widest uppercase hover:bg-primary/30 transition-all">
+                SYNC DNA
+            </button>
+            <div class="size-9 rounded-full bg-slate-800 border border-white/10"
+                style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDn14W2qK0GM8LyEtFVEpWLOVsqAXxuAwoAzjWJym6lTtHJVDZCGh578sDIr31sIKp1WKBY-4xIg_SxeeUICFvIna_x5YDEQAL8HjQh-yOmNqbbUvIYdRmtIOr1KRrAXdwDwWPNpaiLpgNhvIfQajPktnmmQVeB5tFaYgPKX2S0weTebVSbSj-QA94uK-wHSAYJvxsOaTYG9MeOTvENOXMLcjqiheN3Rj4zxxN1OtMUIe1cPO-Z1uc6-sfRcOL4bc1YXnqSR3SqRin-'); background-size: cover;">
+            </div>
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden relative">
+        <aside class="w-80 flex flex-col border-r border-white/5 bg-surface-dark z-20">
+            <!-- System Suggestions (Hidden by default) -->
+            <div id="suggestions-box" class="hidden p-4 bg-amber-500/10 border-b border-amber-500/20">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-[10px] text-amber-500 font-bold uppercase">Discovered Roots</span>
+                    <button onclick="document.getElementById('suggestions-box').classList.add('hidden')"
+                        class="text-slate-500 hover:text-white">
+                        <span class="material-symbols-outlined text-[14px]">close</span>
+                    </button>
+                </div>
+                <div id="suggestions-list" class="space-y-1"></div>
+            </div>
+
+            <div class="p-4 border-b border-white/5 bg-gradient-to-b from-secondary/5 to-transparent">
+                <h2
+                    class="text-secondary text-[10px] font-bold uppercase tracking-widest flex items-center justify-between mb-3">
+                    <span class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[14px]">radar</span> Platforms
+                    </span>
+                    <button onclick="promptAddPlatform()" class="hover:text-white transition-colors">
+                        <span class="material-symbols-outlined text-[16px]">add_link</span>
+                    </button>
+                </h2>
+                <div id="platforms-list" class="space-y-2"></div>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-4 custom-scrollbar">
+                <h2
+                    class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-4 flex items-center justify-between">
+                    Knowledge Roots
+                    <button onclick="promptNewRoot()" class="text-primary hover:text-white transition-colors"><span
+                            class="material-symbols-outlined text-[18px]">add_circle</span></button>
+                </h2>
+                <div id="roots-list" class="space-y-2"></div>
+            </div>
+
+            <div class="p-4 border-t border-white/5 bg-black/40">
+                <div id="drop-zone"
+                    class="border-2 border-dashed border-white/10 rounded-lg p-6 text-center cursor-pointer hover:border-primary/50 transition-all transition-colors">
+                    <span class="material-symbols-outlined text-2xl text-slate-600 mb-2">cloud_upload</span>
+                    <p class="text-[10px] text-slate-500 uppercase font-bold">Nexus Drop Zone</p>
+                    <input type="file" id="file-input" class="hidden" multiple title="Upload assets" />
+                </div>
+            </div>
+        </aside>
+
+        <main class="flex-1 p-6 flex flex-col relative overflow-hidden">
+            <div class="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+                <div
+                    class="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-primary/10 rounded-full blur-[100px] animate-pulse">
+                </div>
+                <div
+                    class="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-secondary/10 rounded-full blur-[100px] animate-pulse">
+                </div>
+            </div>
+
+            <div class="relative z-10 grid grid-cols-12 gap-6 h-full min-h-0">
+                <div class="col-span-8 flex flex-col gap-4 h-full min-h-0">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-white text-xl font-bold tracking-tight flex items-center gap-3">
+                            <span class="material-symbols-outlined text-secondary">account_tree</span>
+                            Intelligence Pipeline
+                        </h2>
+                        <button onclick="proposeWorkflows()" id="propose-btn"
+                            class="bg-secondary/10 hover:bg-secondary/20 text-secondary text-[10px] font-bold px-4 py-2 rounded border border-secondary/30 transition-all uppercase tracking-widest">
+                            Process Bucket
+                        </button>
+                    </div>
+
+                    <div id="workflow-pipeline"
+                        class="glass-panel rounded-xl flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar neon-border border-t-2 border-t-secondary/30">
+                        <div class="flex items-center justify-center h-full text-slate-600 text-sm italic">
+                            Inject assets via the Drop Zone to initiate manifestation.
+                        </div>
+                    </div>
+
+                    <div
+                        class="h-40 glass-panel rounded-xl shrink-0 overflow-hidden flex flex-col bg-black/40 border border-white/5 shadow-inner">
+                        <div
+                            class="px-3 py-1.5 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
+                            <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Neural Vision
+                                Streams</span>
+                            <span class="text-[8px] text-slate-700 font-mono" id="log-count">08:00:00 INITIALIZED</span>
+                        </div>
+                        <div id="vision-log"
+                            class="flex-1 p-3 overflow-y-auto font-mono text-[10px] space-y-1 custom-scrollbar text-slate-500">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-span-4 flex flex-col gap-6 h-full min-h-0">
+                    <div class="glass-panel rounded-xl p-6 border border-primary/30 flex flex-col items-center">
+                        <div class="size-20 relative mb-4">
+                            <div class="absolute inset-0 rounded-full border border-primary/20 animate-spin"></div>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <span
+                                    class="material-symbols-outlined text-3xl text-primary animate-pulse">psychology</span>
+                            </div>
+                        </div>
+                        <h3 class="text-white text-xs font-bold uppercase tracking-widest mb-3">V-Brain Neural Core</h3>
+                        <div class="w-full bg-black/60 rounded p-4 text-center border border-white/5">
+                            <p id="thought-display"
+                                class="text-[10px] text-indigo-100 font-mono leading-relaxed italic transition-opacity">
+                                "System in standby. Focus on Mission Sovereignty."
+                            </p>
+                        </div>
+                    </div>
+
+                    <div
+                        class="glass-panel rounded-xl flex-1 border-t-2 border-t-emerald-500/50 overflow-hidden flex flex-col">
+                        <div
+                            class="bg-black/40 p-2 flex items-center gap-2 border-b border-white/5 text-[9px] font-mono text-slate-600 uppercase">
+                            Terminal Interface
+                        </div>
+                        <div id="agent-terminal"
+                            class="flex-1 p-4 overflow-y-auto font-mono text-[10px] space-y-3 custom-scrollbar text-emerald-500/80 bg-black/20">
+                        </div>
+                        <div class="p-2.5 bg-black/40 border-t border-white/5 flex items-center gap-2">
+                            <span class="text-emerald-500 text-sm font-mono">&gt;</span>
+                            <input type="text" placeholder="Direct Agent Command..."
+                                class="bg-transparent border-none text-xs text-white w-full focus:ring-0 placeholder-slate-600"
+                                title="Terminal Input" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="h-10 bg-[#02040a] border-t border-white/5 flex items-center justify-between px-6 z-30 shrink-0">
+            <div class="flex items-center gap-8 h-full">
+                <div class="flex items-center gap-4">
+                    <span class="text-[9px] text-slate-500 font-bold uppercase">Learning Curve</span>
+                    <div class="w-40 h-1 bg-slate-800 rounded-full overflow-hidden">
+                        <div id="learning-bar"
+                            class="h-full bg-gradient-to-r from-primary to-accent w-0 transition-all duration-1000">
+                        </div>
+                    </div>
+                </div>
+                <div id="active-stats" class="text-[9px] text-slate-600 font-mono flex items-center gap-4">
+                    <span>INTEL_FLOW: READY</span>
+                    <span id="root-count-display">0 ROOTS CONNECTED</span>
+                </div>
+            </div>
+            <div class="text-[9px] text-slate-700 font-mono">PHOENIX_MASTER_v2.5.2_CORE</div>
+        </footer>
+    </div>
+
+    <script>
+        const req = async (p, o = {}) => (await fetch(p, o)).json();
+
+        async function load() {
+            const s = await req("/api/status");
+            document.getElementById("focus-input").value = s.global_focus;
+
+            document.getElementById("roots-list").innerHTML = s.roots.map((r, i) => `
+            <div class="p-3 bg-white/5 border border-white/5 rounded-lg group hover:border-primary/50 transition-all">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-[11px] font-bold text-white truncate">${r.split('/').pop() || r}</span>
+                    <span class="size-1.5 rounded-full ${i == 0 ? 'bg-emerald-500 shadow-[0_0_5px_#10b981]' : 'bg-slate-700'}"></span>
+                </div>
+                <p class="text-[9px] text-slate-500 truncate font-mono opacity-50">${r}</p>
+            </div>
+        `).join("");
+
+            document.getElementById("platforms-list").innerHTML = Object.entries(s.platforms).map(([k, v]) => `
+            <div class="flex items-center justify-between p-2 rounded bg-white/[0.02] border border-transparent hover:border-secondary/20 transition-all">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[14px] text-secondary">${k == 'wordpress' ? 'description' : 'public'}</span>
+                    <span class="text-[11px] text-slate-300 capitalize">${k}</span>
+                </div>
+                <span class="text-[8px] font-mono ${v.status == 'connected' ? 'text-emerald-500' : 'text-slate-600'}">${v.status.toUpperCase()}</span>
+            </div>
+        `).join("");
+
+            const p = Math.min(s.roots.length * 25, 100);
+            document.getElementById("learning-bar").style.width = p + "%";
+            document.getElementById("root-count-display").innerText = `${s.roots.length} ROOTS CONNECTED`;
+            loadWorkflows();
+        }
+
+        async function updateFocus(v) {
+            log("Neural", `Setting Global Focus: ${v}`, "primary");
+            await req("/api/focus/update", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ focus: v }) });
+            setThought(`Focus locked: ${v}. Recalibrating synthesis engine.`);
+        }
+
+        async function addRoot(path) {
+            await req("/api/roots/add", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ path }) });
+            load();
+        }
+
+        async function discoverSystem() {
+            log("Terminal", "Initiating recursive system scan for projects...", "amber");
+            const res = await req("/api/system/discover");
+            if (res.potential.length > 0) {
+                const box = document.getElementById("suggestions-box");
+                box.classList.remove("hidden");
+                document.getElementById("suggestions-list").innerHTML = res.potential.map(p => `
+                <div class="flex items-center justify-between p-2 bg-black/20 rounded border border-amber-500/10 hover:border-amber-500/30 transition-all group">
+                    <span class="text-[9px] text-amber-200/70 truncate mr-2 font-mono">${p.split('/').pop() || p}</span>
+                    <button onclick="addRoot('${p.replace(/\\/g, '/')}'); this.parentElement.remove()" class="text-[8px] bg-amber-500/20 text-amber-500 px-2 py-0.5 rounded font-bold hover:bg-amber-500 text-white transition-all">INGEST</button>
+                </div>
+            `).join("");
+            } else {
+                log("Vision", "No new high-value roots found in common directories.", "slate");
+            }
+        }
+
+        async function promptAddPlatform() {
+            const name = prompt("Platform Name (e.g., Substack, Discord):"); if (!name) return;
+            const url = prompt("Platform URL (webhook or API endpoint):");
+            await req("/api/platforms/add", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, config: { url } }) });
+            load();
+        }
+
+        // Pipeline Logic
+        async function loadWorkflows() {
+            const res = await req("/api/workflow/pending");
+            const container = document.getElementById("workflow-pipeline");
+            if (res.workflows.length === 0) {
+                container.innerHTML = `<div class="flex items-center justify-center h-full text-slate-600 text-sm italic">Inject assets to initiate manifestation.</div>`;
+                return;
+            }
+
+            container.innerHTML = res.workflows.map(wf => `
+            <div class="glass-panel p-5 rounded-xl border-l-4 ${wf.status == 'completed' ? 'border-l-emerald-500' : 'border-l-secondary'} relative group hover:scale-[1.01] transition-all">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="bg-secondary/10 text-secondary text-[10px] font-bold px-2 py-0.5 rounded uppercase font-mono">${wf.plan.platform}</span>
+                            <h4 class="text-white font-bold text-lg">${wf.plan.title}</h4>
+                        </div>
+                        <p class="text-slate-400 text-xs italic mb-4">"${wf.plan.story}"</p>
+                        <div class="flex flex-wrap gap-2">
+                            ${wf.plan.tasks.map(t => `<span class="bg-white/5 text-slate-500 text-[9px] px-2 py-1 rounded border border-white/5">${t[0]}: ${t[1]}</span>`).join("")}
+                        </div>
+                    </div>
+                    ${wf.status === 'awaiting_approval' ? `
+                        <button onclick="ignite('${wf.id}')" class="bg-primary hover:bg-primary/80 text-white text-[10px] font-bold px-6 py-2 rounded-full shadow-lg shadow-primary/20 transition-all uppercase">Ignite</button>
+                    ` : wf.status === 'completed' ? `
+                        <div class="text-emerald-500 flex flex-col items-center">
+                            <span class="material-symbols-outlined text-3xl">check_overlay</span>
+                            <span class="text-[8px] font-mono mt-1">MANIFESTED</span>
+                        </div>
+                    ` : `<div class="loader"></div>`}
+                </div>
+            </div>
+        `).join("");
+        }
+
+        async function ignite(id) {
+            log("Nexus", `Sequence confirmed. Launching agentic workflows...`, "primary");
+            await req(`/api/workflow/execute/${id}`, { method: "POST" });
+            load();
+        }
+
+        // Drag-Drop
+        const dz = document.getElementById("drop-zone");
+        dz.onclick = () => document.getElementById("file-input").click();
+        dz.ondragover = (e) => { e.preventDefault(); dz.style.background = "rgba(13, 89, 242, 0.05)"; };
+        dz.ondragleave = () => { dz.style.background = "transparent"; };
+        dz.ondrop = async (e) => { e.preventDefault(); dz.style.background = "transparent"; upload(e.dataTransfer.files); };
+        document.getElementById("file-input").onchange = (e) => upload(e.target.files);
+
+        async function upload(files) {
+            const fd = new FormData(); Array.from(files).forEach(f => fd.append("files", f));
+            log("Terminal", `Uploading ${files.length} assets...`, "primary");
+            await fetch("/api/bucket/upload", { method: "POST", body: fd });
+            proposeWorkflows();
+        }
+
+        async function proposeWorkflows() {
+            setThought("Scanning inputs for brand-mission alignment...");
+            await req("/api/workflow/propose", { method: "POST" });
+            load();
+        }
+
+        function log(type, msg, color) {
+            const v = document.getElementById("vision-log");
+            const a = document.getElementById("agent-terminal");
+            const html = `<div class="flex gap-2">
+            <span class="opacity-30">${new Date().toLocaleTimeString()}</span>
+            <span class="text-${color}-500 font-bold">[${type.toUpperCase()}]</span>
+            <span>${msg}</span>
+        </div>`;
+            if (type === "Vision" || type === "Neural") v.insertAdjacentHTML('afterbegin', html);
+            else a.insertAdjacentHTML('afterbegin', html);
+        }
+
+        function setThought(t) {
+            const d = document.getElementById("thought-display");
+            d.style.opacity = "0";
+            setTimeout(() => { d.innerText = `"${t}"`; d.style.opacity = "1"; }, 300);
+        }
+
+        async function executeSync() {
+            log("Neural", "Executing system-wide DNA synchronization...", "primary");
+            await req("/api/sync", { method: "POST" });
+            log("Vision", "Sync Complete. V-Brain map recalibrated.", "emerald");
+            load();
+        }
+
+        // Security & Anti-Tamper Lockdown
+        const BRAND_SIGNAL = "HARP * STAR MEDIA MIND MASTER";
+        const masterTitle = document.getElementById("sys-name");
+        const lockdown = document.getElementById("lockdown-screen");
+
+        function securitySweep() {
+            if (masterTitle.innerText.trim().toUpperCase() !== BRAND_SIGNAL) {
+                lockdown.style.display = "flex";
+                document.body.style.overflow = "hidden";
+                console.error("CRITICAL: Brand integrity compromised. System locked.");
+                // Disable all interactions
+                window.stop();
+                document.querySelectorAll('button, input').forEach(el => el.disabled = true);
+            }
+        }
+
+        // Run sweep every 2 seconds and on Mutation
+        setInterval(securitySweep, 2000);
+        const observer = new MutationObserver(securitySweep);
+        observer.observe(masterTitle, { childList: true, characterData: true, subtree: true });
+
+        load();
+        setInterval(load, 15000);
+    </script>
+</body>
+
+</html>
