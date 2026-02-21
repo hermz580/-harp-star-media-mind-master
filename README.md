@@ -7,7 +7,7 @@
 
 ## 1. Project Overview
 
-**Harp * Star Media Mind Master** is a premium, full-stack intelligence platform designed to recursively scan your entire system, learn the DNA of your brand, and manifest coordinated content across all your digital platforms (WordPress, Instagram, YouTube, and custom integrations). It turns raw assets dumped into a "Bucket" into strategic, agent-led workflows with zero manual friction.
+**Harp * Star Media Mind Master** is a premium, full-stack intelligence platform designed to recursively scan your entire system, learn the DNA of your brand, and manifest coordinated content across all your digital platforms. It turns raw assets dumped into a "Bucket" into strategic, agent-led workflows with zero manual friction.
 
 ---
 
@@ -26,35 +26,79 @@ Built for power users and community leaders who demand absolute control over the
 1. **Multi-Root Ingestion**: The system deep-scans designated folders (Roots) to build a "V-Brain" context map.
 2. **The Bucket**: Users drop raw media/docs into the Nexus.
 3. **Neural Synthesis**: The Orchestrator matches the assets against the V-Brain and the Global Mission Focus.
-4. **Execution Pipeline**: Workflows are manifested, approved by the user, and ignited across connected platforms via Agentic scripts.
+4. **Execution Pipeline**: Workflows are manifested, approved by the user, and ignited across connected platforms.
 
 ---
 
 ## 4. Component Analysis
 
-### `brand-engine/main.py`
+### `main.py`
 
-- **Purpose**: FastAPI backend; acts as the primary API bridge.
-- **Status**: Production-ready.
-- **Inputs**: HTTP requests, file uploads.
-- **Outputs**: JSON state, manifested content URLs.
+- **Filename**: `main.py`
+- **Last Modified**: 2026-02-20
+- **Status**: Operational / Stable
+- **Purpose**: Acts as the central nervous system for the web interface, exposing the Orchestrator's internal logic via a high-performance FastAPI server.
+- **Dependencies & Inputs**: `FastAPI`, `Uvicorn`, `MasterOrchestrator`. Inputs include multi-part file uploads (Bucket), JSON focus updates, and workflow execution triggers.
+- **Execution & Automation**: Runs on `uvicorn` (port 8000). Automates the bridging between the frontend UI and the heavy backend logic.
+- **Outputs & Data Destination**: Serves the `public/` directory, mounts the `bucket/` for static asset viewing, and returns structured JSON responses for system status and workflows.
+- **Summary of Output Data**: System status (roots, agents, platforms), upload confirmations, and workflow status logs.
+- **Potential Issues & Notes**: Requires port 8000 to be open. Ensure CORS is configured if accessing from a different domain.
 
-### `brand-engine/brand_brain/orchestrator.py`
+### `brand_brain/orchestrator.py`
 
-- **Purpose**: The "Master Mind." Handles machine learning (V-Brain), asset orchestration, and platform connections.
-- **Dependencies**: Gemini 1.5 Pro, local filesystem.
+- **Filename**: `orchestrator.py`
+- **Last Modified**: 2026-02-20
+- **Status**: Production-ready
+- **Purpose**: The "Master Mind." Manages the end-to-end lifecycle of content, from discovering local project files to agent-based execution.
+- **Dependencies & Inputs**: `Pathlib`, `json`, `BrandSynthesisEngine`, `BrandContentEngine`, `PlatformConnector`. Inputs are local file paths and raw assets in the bucket.
+- **Execution & Automation**: Triggered by API calls from `main.py`. Automates the selection of agents and platforms based on learned DNA.
+- **Outputs & Data Destination**: Manages the `vbrain.json` for persistence and `bucket/processed/` for finalized content assets.
+- **Summary of Output Data**: Real-time "Thoughts" for the UI, proposed workflow objects with embedded marketing logic.
+- **Potential Issues & Notes**: File system permissions are critical for proper scanning and moving assets.
 
-### `brand-engine/public/index.html`
+### `brand_brain/synthesis.py`
 
-- **Purpose**: Premium Command Center UI.
-- **Security**: Features the **Harp*Star Lockdown Protocol**—the system self-terminates if branding is tampered with.
+- **Filename**: `synthesis.py`
+- **Last Modified**: 2026-02-20
+- **Status**: Active / Intelligent
+- **Purpose**: Performs "Deep Scanning" of user file systems to extract brand identity, mission statements, and aesthetic preferences.
+- **Dependencies & Inputs**: `google-generativeai`, `requests`, `BeautifulSoup`. Inputs are local directory structures and external URLs.
+- **Execution & Automation**: Can be run as a standalone "Manifestation" script or called by the Orchestrator.
+- **Outputs & Data Destination**: Generates/updates `brand_profile.json`.
+- **Summary of Output Data**: Brand voice descriptors, signature phrases, and suggested model routing.
+- **Potential Issues & Notes**: Requires a valid `GEMINI_API_KEY`. Respects `.gitignore` to avoid scanning junk files.
+
+### `public/index.html`
+
+- **Filename**: `index.html`
+- **Last Modified**: 2026-02-20
+- **Status**: Enhanced UI
+- **Purpose**: High-fidelity dashboard for the user. Provides visual feedback on the intelligence pipeline.
+- **Dependencies & Inputs**: Tailwind CSS, Material Symbols. Fetches data from `/api/*` endpoints.
+- **Execution & Automation**: Features the **Harp*Star Genesis Lockdown protocol**—client-side anti-tamper logic that secures the brand identity.
+- **Outputs & Data Destination**: Renders the "Neural Core," "Vision Logs," and "Workflow Pipeline."
+- **Summary of Output Data**: Interactive visual cards, real-time terminal logs, and progress bars.
+- **Potential Issues & Notes**: Requires a modern browser with JavaScript enabled.
 
 ---
 
 ## 5. Data Schema Guide
 
-- **V-Brain (`vbrain.json`)**: Persistent JSON store for learned patterns, context maps, and agent integrations.
-- **Workflows**: Ephemeral objects tracking ID, Asset, Story, Agent Tasks, and Platform Status.
+### V-Brain Schema (`vbrain.json`)
+
+```json
+{
+  "context_map": {
+    "root_path": {
+      "brand_identity": { "name": "...", "tone": "..." },
+      "dna_fingerprint": ["README.md", "Dockerfile"]
+    }
+  },
+  "agent_integrations": {
+    "creative-ai": { "status": "active", "type": "image/video" }
+  }
+}
+```
 
 ---
 
@@ -65,10 +109,10 @@ Built for power users and community leaders who demand absolute control over the
 3. Install dependencies:
 
    ```bash
-   pip install fastapi uvicorn google-generativeai python-dotenv
+   pip install fastapi uvicorn google-generativeai python-dotenv anthropic requests beautifulsoup4
    ```
 
-4. Create a `.env` file with your `GEMINI_API_KEY` and platform credentials.
+4. Create a `.env` file with your `GEMINI_API_KEY`, `ANTHROPIC_API_KEY`, and platform credentials.
 
 ---
 
@@ -92,7 +136,8 @@ Then navigate to `http://localhost:8000`.
 
 ## 9. Action Plan & Next Steps
 
-- [ ] **Phase 3**: Real-time video generation integration via FAL.AI or Replicate.
+- [x] **Genesis**: Completed core logic, UI, and security.
+- [ ] **Phase 3**: Real-time video generation integration via FAL.AI.
 - [ ] **Phase 4**: Deep-Search integration for live web-intel scraping.
 - [ ] **Phase 5**: Mobile Companion App for remote "Ignite" approvals.
 
