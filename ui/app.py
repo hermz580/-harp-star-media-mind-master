@@ -4,12 +4,9 @@ import sys
 import json
 from pathlib import Path
 
-# Add brand-engine directory to path
-BRAND_ENGINE_DIR = Path(__file__).parent.parent
-sys.path.append(str(BRAND_ENGINE_DIR))
-
-# Also add the actual root for scraping context
-ROOT_DIR = BRAND_ENGINE_DIR.parent
+# Project root is two levels up from ui/app.py
+ROOT_DIR = Path(__file__).parent.parent
+sys.path.append(str(ROOT_DIR))
 
 from brand_brain.synthesis import BrandSynthesisEngine
 from brand_brain.engine import BrandContentEngine

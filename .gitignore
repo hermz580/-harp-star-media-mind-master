@@ -17,8 +17,8 @@ env/
 Thumbs.db
 
 # Project Specific
-brand-engine/bucket/*
-!brand-engine/bucket/.gitkeep
-brand-engine/bucket/processed/*
-!brand-engine/bucket/processed/.gitkeep
+bucket/*
+!bucket/.gitkeep
+bucket/processed/*
+!bucket/processed/.gitkeep
 brand_brain/vbrain.json

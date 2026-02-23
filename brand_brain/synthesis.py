@@ -132,7 +132,7 @@ class BrandSynthesisEngine:
             result = json.loads(match.group(1).strip() if match else raw.strip())
             
             # Persist to profile
-            profile_path = Path(self.root_path) / "brand-engine" / "brand_brain" / "brand_profile.json"
+            profile_path = Path(self.root_path) / "brand_brain" / "brand_profile.json"
             if profile_path.exists():
                 with open(profile_path, 'w') as f:
                     json.dump(result['brand_manifest_json'], f, indent=2)

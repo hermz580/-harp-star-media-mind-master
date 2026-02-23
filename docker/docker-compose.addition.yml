@@ -2,7 +2,7 @@
 brand-engine:
   build:
     context: .
-    dockerfile: brand-engine/Dockerfile
+    dockerfile: Dockerfile
   container_name: phoenix-brand-engine
   ports:
     - "8501:8501"
@@ -11,7 +11,7 @@ brand-engine:
     - GEMINI_API_KEY=${GEMINI_API_KEY}
     - BRAND_LIBRARY_PATH=${BRAND_LIBRARY_PATH}
   volumes:
-    - ./brand-engine:/app
+    - .:/app
     - ${BRAND_LIBRARY_PATH}:/app/library
   networks:
     - blaqvox-network
