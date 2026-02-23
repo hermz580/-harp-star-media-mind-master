@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import logging
 from pathlib import Path
@@ -126,7 +127,9 @@ class BrandSynthesisEngine:
         
         try:
             response = self.model.generate_content(synthesis_prompt)
-            result = json.loads(response.text.strip('`json\n'))
+            raw = response.text
+            match = re.search(r'```(?:json)?\s*([\s\S]*?)```', raw)
+            result = json.loads(match.group(1).strip() if match else raw.strip())
             
             # Persist to profile
             profile_path = Path(self.root_path) / "brand-engine" / "brand_brain" / "brand_profile.json"

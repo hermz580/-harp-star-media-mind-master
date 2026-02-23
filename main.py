@@ -19,7 +19,7 @@ app.add_middleware(
 )
 
 # Initialize Orchestrator
-ROOT_DIR = Path(__file__).parent.parent
+ROOT_DIR = Path(__file__).parent
 orch = MasterOrchestrator(str(ROOT_DIR))
 
 @app.get("/api/status")

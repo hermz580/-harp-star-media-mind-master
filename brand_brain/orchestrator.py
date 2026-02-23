@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import time
 import shutil
@@ -43,9 +44,9 @@ class MasterOrchestrator:
     
     def __init__(self, workspace_root: str):
         self.workspace_root = Path(workspace_root)
-        self.bucket_path = self.workspace_root / "brand-engine" / "bucket"
-        self.processed_path = self.workspace_root / "brand-engine" / "bucket" / "processed"
-        self.vbrain_path = self.workspace_root / "brand-engine" / "brand_brain" / "vbrain.json"
+        self.bucket_path = self.workspace_root / "bucket"
+        self.processed_path = self.workspace_root / "bucket" / "processed"
+        self.vbrain_path = self.workspace_root / "brand_brain" / "vbrain.json"
         
         self.global_focus = "General Brand Sovereignty"
         self.discovery_paths = [str(self.workspace_root)]
@@ -145,7 +146,9 @@ class MasterOrchestrator:
             
             try:
                 response = self.synth.model.generate_content(prompt)
-                plan = json.loads(response.text.strip('`json\n'))
+                raw = response.text
+                match = re.search(r'```(?:json)?\s*([\s\S]*?)```', raw)
+                plan = json.loads(match.group(1).strip() if match else raw.strip())
                 
                 workflow = {
                     "id": workflow_id,

@@ -163,14 +163,24 @@ with tab2:
             st.info(actions)
         else:
             for act in actions:
+                plan = act.get('plan', {})
+                story = plan.get('story', '')
+                title = plan.get('title', act['asset'])
+                platform = plan.get('platform', '')
                 st.markdown(f"""
                     <div class='bucket-card'>
-                        <h4 style='margin-top:0'>📦 Action for: {act['asset']}</h4>
+                        <h4 style='margin-top:0'>📦 {title}</h4>
+                        <div style='font-size:0.85rem; color:#71717a; margin-bottom:8px;'>
+                            Asset: {act['asset']} &nbsp;|&nbsp; Platform: {platform} &nbsp;|&nbsp; Status: {act.get('status', '')}
+                        </div>
                         <div style='font-size:0.9rem; line-height:1.6;'>
-                            {act['strategy']}
+                            {story}
                         </div>
                     </div>
                 """, unsafe_allow_html=True)
+                if st.button(f"Ignite: {act['id']}", key=act['id']):
+                    result = orch.execute_workflow(act['id'])
+                    st.success(f"Workflow executed. Post result: {result.get('post_result', {})}")
 
 with tab3:
     st.header("📊 V-Brain Context Map")
