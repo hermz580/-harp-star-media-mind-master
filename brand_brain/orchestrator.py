@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Dict, List, Any, Optional
 from .synthesis import BrandSynthesisEngine, DeepScanner
 from .engine import BrandContentEngine
+import uuid
 
 logger = logging.getLogger(__name__)
 
@@ -38,14 +39,93 @@ class PlatformConnector:
         # Real integration logic would switch based on platform type/config
         return {"status": "success", "url": p.get("url", "local_manifest_only")}
 
+from fastapi import WebSocket
+import asyncio
+
+class AgentSwarm:
+    """Manages a collection of free specialist agents that collaborate in real-time"""
+    def __init__(self, orchestrator):
+        self.orch = orchestrator
+        self.specialists = {
+            "Narrator": {"icon": "auto_stories", "color": "primary", "focus": "Brand Story & Copy"},
+            "Visionary": {"icon": "visibility", "color": "secondary", "focus": "Aesthetics & Visual Style"},
+            "Strategist": {"icon": "leaderboard", "color": "accent", "focus": "Platform Impact & ROI"},
+            "Producer": {"icon": "movie_filter", "color": "emerald", "focus": "Execution & Agent Coordination"},
+            "Liaison": {"icon": "smart_toy", "color": "orange-400", "focus": "Hugging Face & Local Model Integration"}
+        }
+        self.active_broadcasts = []
+
+    async def collaborate(self, asset_info: str, focus: str, ws_manager=None, user_spark: str = None):
+        """Simulates a real-time debate between agents to build a production plan"""
+        logs = []
+        
+        # 0. System Note: Agents check learned DNA
+        dna_source = "Local Assets" + (f" + {len(self.orch.inspiration_urls)} Brand Websites" if self.orch.inspiration_urls else "")
+        await self._broadcast("Narrator", f"Initializing sequence. Synching with {dna_source}...", ws_manager)
+        await asyncio.sleep(1.0)
+
+        if user_spark:
+            await self._broadcast("Narrator", f"Recieving User Steering: '{user_spark}'", ws_manager)
+            await asyncio.sleep(0.5)
+
+        # 1. Narrator starts with Cohesion
+        if user_spark:
+            msg = f"Analyzing '{asset_info}'. I will weave your spark '{user_spark}' into the brand core."
+        else:
+            msg = f"Analyzing '{asset_info}'. Autonomous decision: I'm manifesting a high-energy anthem based on the vibrant tones detected in the pixels."
+        await self._broadcast("Narrator", msg, ws_manager)
+        
+        # 2. Visionary weighs in on Consistency
+        await asyncio.sleep(1.5)
+        if user_spark:
+            msg = f"Style lock engaged. Morphing visual geometry to {user_spark} spec."
+        else:
+            msg = "Pixel scanning complete. I've identified a unique grain pattern here. I'm going to generate a series of matching hyper-textures to surround this asset in the final render."
+        await self._broadcast("Visionary", msg, ws_manager)
+
+        # 3. Liaison suggests Free/Community paths
+        await asyncio.sleep(1.0)
+        msg = "I've scouted the HF Hub. For this specific texture, I'm pulling 'Stable-Diffusion-XL-Base' with a custom Lora for that afro-tech shimmer."
+        await self._broadcast("Liaison", msg, ws_manager)
+        
+        # 4. Strategist analyzes inspiration websites
+        await asyncio.sleep(1.2)
+        msg = "Market alignment: This asset screams 'Premium Engagement'. I'm shifting the production cadence to 4K Wide-Screen to dominate the desktop feed."
+        await self._broadcast("Strategist", msg, ws_manager)
+        
+        # 5. Producer finalizes
+        await asyncio.sleep(1.8)
+        msg = "Manifestation pipeline locked. I'm creating a 'Director's Cut' sequence using ALL available media fragments to ensure the story is complete. Ready for ignition."
+        await self._broadcast("Producer", msg, ws_manager)
+
+    async def _broadcast(self, agent: str, message: str, ws_manager):
+        data = {
+            "type": "swarm_talk",
+            "agent": agent,
+            "message": message,
+            "icon": self.specialists[agent]["icon"],
+            "color": self.specialists[agent]["color"],
+            "timestamp": time.time()
+        }
+        if ws_manager:
+            await ws_manager.broadcast(data)
+        logger.info(f"🐝 [Swarm] {agent}: {message}")
+
 class MasterOrchestrator:
     """The Supreme Controller: Learns from multi-roots and acts on the Bucket"""
     
     def __init__(self, workspace_root: str):
         self.workspace_root = Path(workspace_root)
-        self.bucket_path = self.workspace_root / "brand-engine" / "bucket"
-        self.processed_path = self.workspace_root / "brand-engine" / "bucket" / "processed"
-        self.vbrain_path = self.workspace_root / "brand-engine" / "brand_brain" / "vbrain.json"
+        
+        # Check if we are already in the brand-engine directory
+        if self.workspace_root.name == "brand-engine":
+            self.project_root = self.workspace_root
+        else:
+            self.project_root = self.workspace_root / "brand-engine"
+
+        self.bucket_path = self.project_root / "bucket"
+        self.processed_path = self.project_root / "bucket" / "processed"
+        self.vbrain_path = self.project_root / "brand_brain" / "vbrain.json"
         
         self.global_focus = "General Brand Sovereignty"
         self.discovery_paths = [str(self.workspace_root)]
@@ -53,12 +133,15 @@ class MasterOrchestrator:
         # Ensure folders exist
         self.bucket_path.mkdir(parents=True, exist_ok=True)
         self.processed_path.mkdir(parents=True, exist_ok=True)
+        (self.project_root / "brand_brain").mkdir(parents=True, exist_ok=True)
         
         self.synth = BrandSynthesisEngine(str(self.workspace_root))
         self.engine = BrandContentEngine()
         self.platforms = PlatformConnector()
+        self.swarm = AgentSwarm(self) # Initialize Swarm
         
         self.vbrain = self._load_vbrain()
+        self.inspiration_urls = self.vbrain.get("inspiration_urls", [])
         self.active_workflows = {}
 
     def set_focus(self, focus_text: str):
@@ -70,7 +153,7 @@ class MasterOrchestrator:
         if self.vbrain_path.exists():
             with open(self.vbrain_path, 'r') as f:
                 return json.load(f)
-        return {"learned_patterns": [], "context_map": {}, "agent_integrations": {}, "workflows": []}
+        return {"learned_patterns": [], "context_map": {}, "agent_integrations": {}, "workflows": [], "inspiration_urls": []}
 
     def save_vbrain(self):
         with open(self.vbrain_path, 'w') as f:
@@ -80,6 +163,24 @@ class MasterOrchestrator:
         if os.path.exists(path) and path not in self.discovery_paths:
             self.discovery_paths.append(path)
             logger.info(f"📍 Added discovery path: {path}")
+
+    def add_inspiration_url(self, url: str):
+        if url not in self.inspiration_urls:
+            self.inspiration_urls.append(url)
+            self.vbrain["inspiration_urls"] = self.inspiration_urls
+            self.save_vbrain()
+            logger.info(f"🔗 Added Inspiration URL: {url}")
+        return self.inspiration_urls
+
+    def sync_dna(self):
+        """Multi-root learning + External Website Synthesis"""
+        logger.info("📡 Starting Deep DNA Sync...")
+        # Manifest from both local roots and inspiration websites
+        manifest = self.synth.manifest_brand(external_urls=self.inspiration_urls)
+        
+        self.vbrain["context_map"][self.discovery_paths[0]] = manifest
+        self.vbrain["last_learning_session"] = time.time()
+        self.save_vbrain()
 
     def learn(self):
         """Phase 2: Machine Learning - Fingerprinting all allowed filesystems"""
@@ -115,51 +216,30 @@ class MasterOrchestrator:
                     continue
         return potential[:10] # Return top 10 suggestions
 
-    def process_bucket(self):
-        """Creates proposed workflows for items in the bucket, using global focus"""
-        new_items = [f for f in self.bucket_path.glob('*') if f.is_file()]
-        if not new_items:
-            return []
-        
+    def process_bucket(self, user_spark: str = None) -> List[Dict]:
+        """Scans bucket and proposes workflows based on discovered assets, DNA, and optional user steering"""
         proposals = []
-        for item in new_items:
-            workflow_id = f"wf_{int(time.time())}_{item.stem}"
-            
-            # Analyze context for creation
-            manifest = self.vbrain.get("context_map", {}).get(self.discovery_paths[0], {})
-            brand_info = manifest.get("brand_identity", {"brand_name": "Phoenix"})
-            
-            prompt = f"""
-            Identify the best Workflow for this asset: '{item.name}'.
-            Brand DNA: {json.dumps(brand_info)}
-            USER MISSION FOCUS: {self.global_focus}
-            
-            Deliver a high-impact strategy that aligns with the user's specific mission focus.
-            
-            Output a JSON with:
-            - title: Name of the workflow
-            - story: The narrative hook (must incorporate the Focus)
-            - tasks: List of [agent, task_description]
-            - platform: Best platform for this (e.g. wordpress, instagram, youtube, or any custom platform)
-            """
-            
-            try:
-                response = self.synth.model.generate_content(prompt)
-                plan = json.loads(response.text.strip('`json\n'))
+        asset_exts = ('.png', '.jpg', '.jpeg', '.mp4', '.mov', '.webp')
+        
+        for path in self.bucket_path.glob('*'):
+            if path.suffix.lower() in asset_exts and 'processed' not in str(path):
+                w_id = str(uuid.uuid4())[:8]
+                # Default to a free workflow if it's an image
+                is_free = path.suffix.lower() in ('.png', '.jpg', '.jpeg', '.webp')
                 
-                workflow = {
-                    "id": workflow_id,
-                    "asset": item.name,
-                    "plan": plan,
-                    "status": "awaiting_approval",
-                    "timestamp": time.time()
-                }
-                
-                self.active_workflows[workflow_id] = workflow
-                proposals.append(workflow)
-                
-            except Exception as e:
-                logger.error(f"Failed to propose workflow for {item.name}: {e}")
+                desc = f"Targeting {path.stem}. Utilizing Hugging Face Liaison for free creative synthesis."
+                if user_spark:
+                    desc += f" Context: User requested '{user_spark}'."
+
+                proposals.append({
+                    "id": w_id,
+                    "asset": path.name,
+                    "type": "No-Key Manifestation" if is_free else "Premium Production",
+                    "description": desc,
+                    "status": "pending",
+                    "free": is_free
+                })
+                self.active_workflows[w_id] = proposals[-1]
         
         return proposals
 

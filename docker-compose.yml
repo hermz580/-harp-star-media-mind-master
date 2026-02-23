@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  harpstar:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./bucket:/app/bucket
+      - ./brand_brain:/app/brand_brain
+      - ./.env:/app/.env
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped

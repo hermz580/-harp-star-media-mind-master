@@ -1,7 +1,13 @@
+fastapi
+uvicorn
+websockets
+python-multipart
 beautifulsoup4
-streamlit
 anthropic
 google-generativeai
 python-dotenv
 pandas
 requests
+jinja2
+python-multipart
+aiofiles

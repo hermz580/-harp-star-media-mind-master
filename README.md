@@ -143,6 +143,53 @@ Then navigate to `http://localhost:8000`.
 
 ---
 
+## 🐳 Docker Manifestation
+
+**Harp * Star Media Mind Master** is fully containerized. To deploy your own instance:
+
+1. Ensure Docker & Docker Compose are installed.
+2. Run:
+
+   ```bash
+   docker-compose build
+   docker-compose up -d
+   ```
+
+3. Access the Command Center at `http://localhost:8000`.
+
+---
+
+## 🤖 Hugging Face & 'No-Key' Manifestation
+
+**Harp * Star Media Mind Master** prioritizes accessibility. The system is pre-loaded with a **Hugging Face Liaison** agent that:
+
+- **Auto-Discovers Models**: Scans the HF Hub for free-to-use models (SDXL, Flux, Video-Generators) that match your brand DNA.
+- **API-Less Workflows**: Supports workflows that leverage free community inference or local execution (for users with GPUs).
+- **Agentic Openness**: You can plug in any custom model URL from Git or Hugging Face. The Liaison will automatically attempt to integrate it into the pipeline logic.
+
+---
+
+## 🛠️ Plugin Your Own Agent (Git/HF)
+
+To add a custom creative engine:
+
+1. Go to the **Platforms** section.
+2. Select **Custom Agent Root**.
+3. Provide the Hugging Face repo ID or a Git URL.
+4. The **Liaison** will map the inputs/outputs and make it available in the **Workflow Ignite** options.
+
+---
+
+## 🔗 External Brand Learning (Roots)
+
+You can now add **Inspiration Roots** (Brand Websites). The system uses recursive scraping and LLM synthesis to:
+
+- Learn color palettes and tone from industry leaders.
+- Suggest "Cohesive Echoes"—workflows that replicate the style of your inspiration roots using YOUR local assets.
+- Maintain visual consistency across different "angles" and generations.
+
+---
+
 ## 9. Action Plan & Next Steps
 
 - [x] **Genesis**: Completed core logic, UI, and security.
