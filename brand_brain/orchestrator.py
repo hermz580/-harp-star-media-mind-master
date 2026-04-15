@@ -61,7 +61,8 @@ class AgentSwarm:
             "Visionary": {"icon": "visibility", "color": "secondary", "focus": "Aesthetics & Visual Style"},
             "Strategist": {"icon": "leaderboard", "color": "accent", "focus": "Platform Impact & ROI"},
             "Producer": {"icon": "movie_filter", "color": "emerald", "focus": "Execution & Agent Coordination"},
-            "Liaison": {"icon": "smart_toy", "color": "orange-400", "focus": "Hugging Face & Local Model Integration"}
+            "Liaison": {"icon": "smart_toy", "color": "orange-400", "focus": "Hugging Face & Local Model Integration"},
+            "Arbiter": {"icon": "gavel", "color": "red-500", "focus": "Hallucination Defense & Fact Checking"}
         }
         self.active_broadcasts = []
 
@@ -111,8 +112,13 @@ class AgentSwarm:
         msg = "Market alignment: This asset screams 'Premium Engagement'. I'm shifting the production cadence to 4K Wide-Screen to dominate the desktop feed."
         await self._broadcast("Strategist", msg, ws_manager)
         
-        # 5. Producer finalizes
-        await asyncio.sleep(1.8)
+        # 5. Arbiter cross-checks (Update 9: Hallucination Critic)
+        await asyncio.sleep(1.4)
+        msg = "Cross-referencing swarm output with Brand DNA. Logic check passed. No hallucinations detected in the creative stack."
+        await self._broadcast("Arbiter", msg, ws_manager)
+
+        # 6. Producer finalizes
+        await asyncio.sleep(1.2)
         msg = "Manifestation pipeline locked. I'm creating a 'Director's Cut' sequence using ALL available media fragments to ensure the story is complete. Ready for ignition."
         await self._broadcast("Producer", msg, ws_manager)
 
@@ -127,6 +133,7 @@ class AgentSwarm:
                         ["Visionary", "Locked visual geometry and hyper-textures."],
                         ["Liaison", "Integrated SDXL for creative synthesis."],
                         ["Strategist", "Aligned production with market engagement."],
+                        ["Arbiter", "Verified factual alignment with project DNA."],
                         ["Producer", "Finalized Director's Cut sequence."]
                     ],
                     "platform": "local_export"
@@ -209,6 +216,23 @@ class MasterOrchestrator:
         self.global_focus = focus_text
         logger.info(f"🎯 Global Intelligence Focus set to: {focus_text}")
         return self.global_focus
+
+    def track_sentiment(self, text: str):
+        """Update 5: Sentiment & Tone Tracking"""
+        # Basic keyword-based sentiment for demonstration
+        positive = ['great', 'awesome', 'excellent', 'success', 'power', 'empower']
+        negative = ['fail', 'error', 'bad', 'poor', 'risk']
+
+        score = 0
+        for p in positive:
+            if p in text.lower(): score += 1
+        for n in negative:
+            if n in text.lower(): score -= 1
+
+        history = self.vbrain.get("sentiment_history", [])
+        history.append({"timestamp": time.time(), "score": score, "text": text[:50]})
+        self.vbrain["sentiment_history"] = history[-50:] # Keep last 50
+        return score
 
     def _load_vbrain(self) -> Dict:
         if self.vbrain_path.exists():

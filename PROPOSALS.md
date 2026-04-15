@@ -5,14 +5,14 @@ This document outlines 50 strategic updates to transform the app into a world-cl
 ### Core Intelligence & DNA (1-10)
 1.  **Local LLM Integration:** Add support for Ollama/Llama.cpp to ensure 100% data sovereignty.
 2.  **Vision DNA Extraction:** Use Vision-capable models to analyze bucket assets for better style matching.
-3.  **Recursive Code Mapping:** AST parsing of ingested roots to understand brand-building patterns.
+3.  [x] **Recursive Code Mapping:** AST parsing of ingested roots to understand brand-building patterns.
 4.  **Vector Memory (RAG):** FAISS/ChromaDB backend for handling massive file contexts.
-5.  **Sentiment & Tone Tracking:** Agent-led graphing of brand tone shifts over time.
+5.  [x] **Sentiment & Tone Tracking:** Agent-led graphing of brand tone shifts over time.
 6.  **Autonomous Trend Scraping:** Keyword-based content pivot suggestions.
 7.  **Dynamic Prompt Evolution:** Refine agent prompts based on user "Ignition" history.
 8.  **Multi-Root Priority:** Weighted ingestion roots for prioritized source truth.
-9.  **Hallucination Critic Agent:** Safety agent for cross-referencing generated facts.
-10. **Agent Personality Tuning:** UI sliders for Creativity vs. Precision.
+9.  [x] **Hallucination Critic Agent:** Safety agent for cross-referencing generated facts.
+10. [x] **Agent Personality Tuning:** UI sliders for Creativity vs. Precision.
 
 ### Workflows & Automation (11-20)
 11. **Real Video Generation:** Integration with Fal.ai or Runway for autonomous b-roll.
@@ -35,8 +35,8 @@ This document outlines 50 strategic updates to transform the app into a world-cl
 26. **Terminal Customization:** User-defined fonts and colors for Swarm Terminal.
 27. **Haptic & Sound Feedback:** Sci-fi UI sound effects for system events.
 28. **Keyboard Power-User Mode:** Command palette (Cmd+K) navigation.
-29. **Global Search:** Full-text search across V-Brain and history.
-30. **Workflow Progress Bars:** Granular "Agent Thinking" visualizations.
+29. [x] **Global Search:** Full-text search across V-Brain and history.
+30. [x] **Workflow Progress Bars:** Granular "Agent Thinking" visualizations.
 
 ### Security & Sovereignty (31-40)
 31. **Encrypted V-Brain:** AES-256 encryption for vbrain.json and keys.

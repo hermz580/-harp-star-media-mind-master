@@ -101,6 +101,9 @@
         </div>
 
         <div class="flex items-center gap-3">
+            <button onclick="toggleTheme()" class="p-2 text-slate-400 hover:text-white transition-colors">
+                <span class="material-symbols-outlined text-sm">palette</span>
+            </button>
             <button onclick="executeSync()" class="bg-neon-cyan/10 border border-neon-cyan/40 text-neon-cyan px-4 py-1.5 font-orbitron text-[10px] font-bold tracking-widest hover:bg-neon-cyan hover:text-black transition-all">SYNC DNA</button>
             <button onclick="discoverSystem()" class="bg-amber-500/10 border border-amber-500/40 text-amber-500 px-4 py-1.5 font-orbitron text-[10px] font-bold tracking-widest hover:bg-amber-500 hover:text-black transition-all">SCAN SYSTEM</button>
         </div>
@@ -132,6 +135,28 @@
                 <div id="roots-list" class="space-y-4 max-h-64 overflow-y-auto pr-2"></div>
             </div>
 
+            <div class="sci-box p-4 border-amber-500/30">
+                <h3 class="font-orbitron text-[10px] items-center flex gap-2 text-amber-500 font-bold mb-4 uppercase">
+                    <span class="material-symbols-outlined text-sm">tune</span> Agent Personality
+                </h3>
+                <div class="space-y-4">
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-[8px] text-slate-500 uppercase">
+                            <span>Precision</span>
+                            <span>Creativity</span>
+                        </div>
+                        <input type="range" onchange="updatePersonality()" class="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-amber-500">
+                    </div>
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-[8px] text-slate-500 uppercase">
+                            <span>Logic</span>
+                            <span>Abstract</span>
+                        </div>
+                        <input type="range" onchange="updatePersonality()" class="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-amber-500">
+                    </div>
+                </div>
+            </div>
+
             <div class="sci-box p-4 border-neon-magenta/30">
                 <h3 class="font-orbitron text-[10px] items-center flex gap-2 text-neon-magenta font-bold mb-4 uppercase">
                     <span class="material-symbols-outlined text-sm">language</span> Inspiration Roots
@@ -148,8 +173,22 @@
             </div>
         </aside>
 
-        <!-- Main Column -->
-        <div class="flex-grow flex flex-col p-6 gap-6 overflow-hidden">
+    <!-- Command Palette -->
+    <div id="command-palette" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-start justify-center pt-20">
+        <div class="w-[600px] sci-box border-neon-cyan/50 p-2">
+            <div class="flex items-center gap-3 p-4 border-b border-white/10">
+                <span class="material-symbols-outlined text-neon-cyan">terminal</span>
+                <input id="command-input" type="text" placeholder="TYPE A COMMAND (sync, scan, theme, search...)"
+                    class="bg-transparent border-none focus:ring-0 text-white font-mono text-sm w-full uppercase">
+            </div>
+            <div class="p-4 text-[10px] text-slate-500 font-mono">
+                <div class="flex justify-between mb-2"><span>CTRL+K TO CLOSE</span> <span>ESC TO CANCEL</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Column -->
+    <div class="flex-grow flex flex-col p-6 gap-6 overflow-hidden">
             <div class="flex justify-between items-center">
                 <h2 class="font-orbitron text-lg font-bold text-white flex items-center gap-3 italic">
                     <span class="size-2 rounded-full bg-neon-cyan shadow-[0_0_8px_#00ffcc] animate-pulse"></span>
@@ -260,6 +299,10 @@
             setThought(`Strategic Focus recalibrated: ${v}`);
         }
 
+        function updatePersonality() {
+            setThought("Recalibrating Agent Personality Matrix...");
+        }
+
         async function addInspiration() {
             const url = prompt("Enter Brand URL:");
             if (!url) return;
@@ -305,12 +348,29 @@
                     <div class="flex justify-between items-start">
                         <div class="flex-1">
                             <h4 class="text-white font-bold text-sm tracking-tight mb-1 uppercase font-orbitron">${wf.plan.title}</h4>
+
+                            <!-- Update 23: Integrated Media Player -->
+                            ${['png','jpg','jpeg','webp'].includes(wf.asset.split('.').pop().toLowerCase())
+                                ? `<div class="w-full h-32 bg-black/40 rounded border border-white/5 mb-3 overflow-hidden flex items-center justify-center">
+                                     <img src="/bucket/${wf.asset}" class="h-full object-contain opacity-60 group-hover:opacity-100 transition-opacity">
+                                   </div>`
+                                : ''}
+
                             <p class="text-slate-400 text-[10px] italic mb-3">"${wf.plan.story}"</p>
+
+                            <!-- Update 30: Workflow Progress Bars -->
+                            <div class="w-full h-1 bg-white/5 rounded-full mb-4 overflow-hidden">
+                                <div class="h-full bg-secondary transition-all duration-700 shadow-[0_0_5px_#06b6d4]"
+                                     style="width: ${wf.status == 'completed' ? '100' : (wf.status == 'executing' ? '65' : '15')}%"></div>
+                            </div>
+
                             <div class="flex flex-wrap gap-2">
                                 ${wf.plan.tasks.map(t => `<span class="bg-white/5 text-slate-500 text-[8px] px-2 py-0.5 rounded border border-white/5 font-mono">${t[0]}: ${t[1]}</span>`).join("")}
                             </div>
                         </div>
-                        <button onclick="ignite('${wf.id}')" class="bg-neon-cyan/10 hover:bg-neon-cyan text-neon-cyan hover:text-black text-[9px] font-black px-5 py-2 border border-neon-cyan/40 transition-all uppercase font-orbitron">IGNITE</button>
+                        <button onclick="ignite('${wf.id}')" class="bg-neon-cyan/10 hover:bg-neon-cyan text-neon-cyan hover:text-black text-[9px] font-black px-5 py-2 border border-neon-cyan/40 transition-all uppercase font-orbitron">
+                            ${wf.status == 'executing' ? 'EXECUTING...' : 'IGNITE'}
+                        </button>
                     </div>
                 </div>
             `).join("");
@@ -327,6 +387,42 @@
             d.style.opacity = "0";
             setTimeout(() => { d.innerText = `"${t}"`; d.style.opacity = "1"; }, 200);
         }
+
+        let isPlasma = false;
+        function toggleTheme() {
+            isPlasma = !isPlasma;
+            document.body.style.setProperty('--neon-cyan', isPlasma ? '#ff00ff' : '#00ffcc');
+            document.body.style.setProperty('--primary', isPlasma ? '#ec4899' : '#6366f1');
+            setThought(isPlasma ? "Theme: PLASMA ACTIVE" : "Theme: OBSIDIAN ACTIVE");
+        }
+
+        // Command Palette Logic
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'k') {
+                e.preventDefault();
+                document.getElementById('command-palette').classList.toggle('hidden');
+                document.getElementById('command-input').focus();
+            }
+            if (e.key === 'Escape') {
+                document.getElementById('command-palette').classList.add('hidden');
+            }
+        });
+
+        document.getElementById('command-input').addEventListener('keydown', async (e) => {
+            if (e.key === 'Enter') {
+                const cmd = e.target.value.toLowerCase();
+                if (cmd === 'sync') executeSync();
+                if (cmd === 'scan') discoverSystem();
+                if (cmd === 'theme') toggleTheme();
+                if (cmd.startsWith('search ')) {
+                    const q = cmd.replace('search ', '');
+                    const res = await req(`/api/search?q=${q}`);
+                    setThought(`Found ${res.results?.length || 0} matches for "${q}"`);
+                }
+                e.target.value = '';
+                document.getElementById('command-palette').classList.add('hidden');
+            }
+        });
 
         async function executeSync() {
             await req("/api/sync", { method: "POST" });

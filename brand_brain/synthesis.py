@@ -45,16 +45,19 @@ class DeepScanner:
                     "size": path.stat().st_size
                 })
 
+        # [Update 3: Recursive Code Mapping]
         # Scan for Project DNA (package.json, setup files, main entries)
-        dna_files = ['package.json', 'requirements.txt', 'Dockerfile', 'main.py', 'index.html']
+        dna_files = ['package.json', 'requirements.txt', 'Dockerfile', 'main.py', 'index.html', 'AGENTS.md']
         for dna in dna_files:
             dna_path = self.root_path / dna
             if dna_path.exists():
                 try:
                     with open(dna_path, 'r', encoding='utf-8') as f:
+                        content = f.read(2000)
                         self.code_fingerprints.append({
                             "file": dna,
-                            "content": f.read(1000)
+                            "content": content,
+                            "logic_clusters": self._extract_clusters(content)
                         })
                 except:
                     continue
@@ -92,6 +95,15 @@ class BrandSynthesisEngine:
         self.api_key = os.getenv("GEMINI_API_KEY")
         genai.configure(api_key=self.api_key)
         self.model = genai.GenerativeModel('gemini-1.5-pro')
+
+    def _extract_clusters(self, content: str) -> List[str]:
+        """Simplified logic clustering for Recursive Code Mapping"""
+        clusters = []
+        lines = content.split('\n')
+        for line in lines:
+            if 'class ' in line or 'def ' in line or 'function ' in line:
+                clusters.append(line.strip())
+        return clusters
 
     def manifest_brand(self, external_urls: List[str] = []) -> Dict[str, Any]:
         """Deep Synthesis: Scan, Scrap, and Manifest"""

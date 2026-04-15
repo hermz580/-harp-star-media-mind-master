@@ -111,6 +111,28 @@ async def propose_workflows(background_tasks: BackgroundTasks, body: dict = Body
 async def get_pending_workflows():
     return {"workflows": list(orch.active_workflows.values())}
 
+@app.get("/api/search")
+async def global_search(q: str):
+    """Update 29: Global Search implementation"""
+    results = []
+    q = q.lower()
+
+    # Search DNA
+    for root, manifest in orch.vbrain.get("context_map", {}).items():
+        if q in root.lower():
+            results.append({"type": "root", "title": root, "snippet": "Filesystem Root"})
+
+        for asset in manifest.get("assets", []):
+            if q in asset['path'].lower():
+                results.append({"type": "asset", "title": asset['path'], "snippet": f"Found in {root}"})
+
+    # Search Workflows
+    for wf in orch.active_workflows.values():
+        if q in wf['plan']['title'].lower() or q in wf['plan']['story'].lower():
+            results.append({"type": "workflow", "title": wf['plan']['title'], "snippet": wf['plan']['story']})
+
+    return {"results": results[:10]}
+
 @app.post("/api/workflow/execute/{workflow_id}")
 async def execute_workflow(workflow_id: str):
     result = orch.execute_workflow(workflow_id)
