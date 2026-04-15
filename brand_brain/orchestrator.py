@@ -4,6 +4,8 @@ import time
 import shutil
 import logging
 from pathlib import Path
+import importlib
+import pkgutil
 from typing import Dict, List, Any, Optional
 from .synthesis import BrandSynthesisEngine, DeepScanner
 from .engine import BrandContentEngine
@@ -78,7 +80,15 @@ class AgentSwarm:
 
         # 1. Narrator starts with Cohesion
         if user_spark:
-            msg = f"Analyzing '{asset_info}'. I will weave your spark '{user_spark}' into the brand core."
+            # use Content Engine for dynamic Narrator response
+            try:
+                ai_msg = self.orch.engine.generate_content(
+                    f"Narrate a collaborative swarm plan for asset '{asset_info}' including user spark '{user_spark}'. Be brief and sci-fi.",
+                    task_type="default"
+                )
+                msg = ai_msg.get("content", f"Analyzing '{asset_info}'. Integrated spark: {user_spark}")
+            except Exception:
+                msg = f"Analyzing '{asset_info}'. I will weave your spark '{user_spark}' into the brand core."
         else:
             msg = f"Analyzing '{asset_info}'. Autonomous decision: I'm manifesting a high-energy anthem based on the vibrant tones detected in the pixels."
         await self._broadcast("Narrator", msg, ws_manager)
@@ -167,6 +177,33 @@ class MasterOrchestrator:
         self.vbrain = self._load_vbrain()
         self.inspiration_urls = self.vbrain.get("inspiration_urls", [])
         self.active_workflows = {}
+        self.plugins = self._load_plugins()
+
+    def _load_plugins(self):
+        plugins = {}
+        self.vbrain["plugins"] = {}
+        plugin_path = Path(__file__).parent / "plugins"
+        if not plugin_path.exists():
+            return plugins
+
+        for loader, module_name, is_pkg in pkgutil.iter_modules([str(plugin_path)]):
+            if module_name == "base":
+                continue
+            try:
+                module = importlib.import_module(f".plugins.{module_name}", package="brand_brain")
+                for attr_name in dir(module):
+                    attr = getattr(module, attr_name)
+                    if isinstance(attr, type) and issubclass(attr, module.BasePlugin) and attr != module.BasePlugin:
+                        plugin_instance = attr()
+                        plugins[plugin_instance.name] = plugin_instance
+                        self.vbrain["plugins"][plugin_instance.name] = {
+                            "description": plugin_instance.description,
+                            "module": module_name
+                        }
+                        logger.info(f"🔌 Loaded plugin: {plugin_instance.name}")
+            except Exception as e:
+                logger.error(f"❌ Failed to load plugin {module_name}: {e}")
+        return plugins
 
     def set_focus(self, focus_text: str):
         self.global_focus = focus_text
@@ -179,9 +216,36 @@ class MasterOrchestrator:
                 return json.load(f)
         return {"learned_patterns": [], "context_map": {}, "agent_integrations": {}, "workflows": [], "inspiration_urls": []}
 
-    def save_vbrain(self):
+    def save_vbrain(self, snapshot=True):
         with open(self.vbrain_path, 'w') as f:
             json.dump(self.vbrain, f, indent=2)
+        if snapshot:
+            self.snapshot_dna()
+
+    def snapshot_dna(self):
+        """Creates a timestamped backup of the current Brand DNA"""
+        backup_dir = self.project_root / "backups"
+        backup_dir.mkdir(parents=True, exist_ok=True)
+
+        timestamp = int(time.time())
+        backup_path = backup_dir / f"dna_snapshot_{timestamp}.json"
+
+        snapshot = {
+            "timestamp": timestamp,
+            "vbrain": self.vbrain,
+            "profile": {}
+        }
+
+        profile_path = self.project_root / "brand_brain" / "brand_profile.json"
+        if profile_path.exists():
+            with open(profile_path, 'r') as f:
+                snapshot["profile"] = json.load(f)
+
+        with open(backup_path, 'w') as f:
+            json.dump(snapshot, f, indent=2)
+
+        logger.info(f"💾 Brand DNA Snapshot created: {backup_path.name}")
+        self.vbrain["last_backup"] = timestamp
 
     def add_discovery_path(self, path: str):
         if os.path.exists(path) and path not in self.discovery_paths:

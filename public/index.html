@@ -108,7 +108,23 @@
 
     <main class="flex-grow flex overflow-hidden">
         <!-- Sidebar -->
-        <aside class="w-80 border-r border-white/5 p-6 flex flex-col gap-6 bg-black/20 shrink-0">
+        <aside class="w-80 border-r border-white/5 p-6 flex flex-col gap-6 bg-black/20 shrink-0 overflow-y-auto">
+            <div class="sci-box p-4 border-white/20">
+                <h3 class="font-orbitron text-[10px] items-center flex gap-2 text-slate-400 font-bold mb-4 uppercase">
+                    <span class="material-symbols-outlined text-sm">settings_suggest</span> System Status
+                </h3>
+                <div class="space-y-2 font-mono text-[9px]">
+                    <div class="flex justify-between">
+                        <span class="text-slate-500">PLUGINS ACTIVE:</span>
+                        <span id="plugin-count" class="text-neon-cyan">0</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-500">LAST BACKUP:</span>
+                        <span id="last-backup" class="text-neon-magenta">NEVER</span>
+                    </div>
+                </div>
+            </div>
+
             <div class="sci-box p-4 border-primary/30">
                 <h3 class="font-orbitron text-[10px] items-center flex gap-2 text-primary font-bold mb-4 uppercase">
                     <span class="material-symbols-outlined text-sm">database</span> Knowledge Roots
@@ -229,6 +245,13 @@
             const p = Math.min((s.roots || []).length * 25, 100);
             document.getElementById("learning-bar").style.width = p + "%";
             document.getElementById("root-count-display").innerText = `${(s.roots || []).length} ROOTS SYNCED`;
+
+            // System Status Updates
+            document.getElementById("plugin-count").innerText = Object.keys(s.vbrain.plugins || s.vbrain.agent_integrations || {}).length;
+            if (s.vbrain.last_backup) {
+                document.getElementById("last-backup").innerText = new Date(s.vbrain.last_backup * 1000).toLocaleTimeString();
+            }
+
             loadWorkflows();
         }
 
