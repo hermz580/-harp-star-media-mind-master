@@ -1,8 +1,8 @@
 INFO:     Shutting down
 INFO:     Waiting for application shutdown.
 INFO:     Application shutdown complete.
-INFO:     Finished server process [457853]
-/app/brand_brain/synthesis.py:9: FutureWarning:
+INFO:     Finished server process [534592]
+/app/brand_brain/synthesis.py:8: FutureWarning:
 
 All support for the `google.generativeai` package has ended. It will no longer be receiving
 updates or bug fixes. Please switch to the `google.genai` package as soon as possible.
@@ -22,17 +22,17 @@ INFO:sentence_transformers.base.model:Loading SentenceTransformer model from sen
 INFO:httpx:HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/config_sentence_transformers.json "HTTP/1.1 307 Temporary Redirect"
 INFO:httpx:HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/c9745ed1d9f207416be6d2e6f8de32d1f16199bf/config_sentence_transformers.json "HTTP/1.1 200 OK"
 INFO:httpx:HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/README.md "HTTP/1.1 307 Temporary Redirect"
-INFO:httpx:HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/c9745ed1d9f207416be6d2e6f8de32d1f16199bf/README.md "HTTP/1.1 200 OK"
-INFO:httpx:HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/modules.json "HTTP/1.1 307 Temporary Redirect"
 Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
 WARNING:huggingface_hub.utils._http:Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+INFO:httpx:HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/c9745ed1d9f207416be6d2e6f8de32d1f16199bf/README.md "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/modules.json "HTTP/1.1 307 Temporary Redirect"
 INFO:httpx:HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/c9745ed1d9f207416be6d2e6f8de32d1f16199bf/modules.json "HTTP/1.1 200 OK"
 INFO:httpx:HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/sentence_bert_config.json "HTTP/1.1 307 Temporary Redirect"
 INFO:httpx:HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/c9745ed1d9f207416be6d2e6f8de32d1f16199bf/sentence_bert_config.json "HTTP/1.1 200 OK"
 INFO:httpx:HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/adapter_config.json "HTTP/1.1 404 Not Found"
 INFO:httpx:HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
 INFO:httpx:HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/c9745ed1d9f207416be6d2e6f8de32d1f16199bf/config.json "HTTP/1.1 200 OK"
-Loading weights:   0%|          | 0/103 [00:00<?, ?it/s]Loading weights: 100%|██████████| 103/103 [00:00<00:00, 1813.59it/s]
+Loading weights:   0%|          | 0/103 [00:00<?, ?it/s]Loading weights: 100%|██████████| 103/103 [00:00<00:00, 1809.33it/s]
 [1mBertModel LOAD REPORT[0m from: sentence-transformers/all-MiniLM-L6-v2
 Key                     | Status     |  |
 ------------------------+------------+--+-
@@ -59,27 +59,8 @@ INFO:httpx:HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/se
 INFO:httpx:HTTP Request: GET https://huggingface.co/api/models/sentence-transformers/all-MiniLM-L6-v2 "HTTP/1.1 200 OK"
 /app/brand_brain/memory.py:14: FutureWarning: The `get_sentence_embedding_dimension` method has been renamed to `get_embedding_dimension`.
   self.dimension = self.model.get_sentence_embedding_dimension()
-INFO:     Started server process [470680]
+INFO:     Started server process [547953]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
-INFO:     127.0.0.1:49694 - "GET /api/status HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49704 - "GET / HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49704 - "GET /api/status HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49716 - "WebSocket /ws" [accepted]
-INFO:     connection open
-INFO:     127.0.0.1:49704 - "GET /api/workflow/pending HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49704 - "POST /api/workflow/propose HTTP/1.1" 200 OK
-INFO:brand_brain.orchestrator:🐝 [Swarm] Narrator: Initializing sequence. Synching with Local Assets...
-INFO:     127.0.0.1:49704 - "GET /api/status HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49704 - "GET /api/workflow/pending HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49704 - "GET /bucket/WIN_20250531_02_30_17_Pro.jpg HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49718 - "GET /bucket/WIN_20260220_08_07_33_Pro.jpg HTTP/1.1" 200 OK
-INFO:brand_brain.orchestrator:🐝 [Swarm] Modeler: Analyzing task complexity. Focus: 'General Brand Sovereignty'. Suggested Stack: LM Studio Llama-3 (Local Privacy) [High Priority]. Awaiting User Confirmation.
-INFO:brand_brain.orchestrator:🐝 [Swarm] Narrator: Analyzing 'WIN_20250531_02_30_17_Pro.jpg'. Autonomous decision: I'm manifesting a high-energy anthem based on the vibrant tones detected in the pixels.
-INFO:brand_brain.orchestrator:🐝 [Swarm] Visionary: Pixel scanning complete. I've identified a unique grain pattern here. I'm going to generate a series of matching hyper-textures to surround this asset in the final render.
-INFO:brand_brain.orchestrator:🐝 [Swarm] Liaison: I've scouted the HF Hub. For this specific texture, I'm pulling 'Stable-Diffusion-XL-Base' with a custom Lora for that afro-tech shimmer.
-INFO:     connection closed
-INFO:brand_brain.orchestrator:🐝 [Swarm] Strategist: Market alignment: This asset screams 'Premium Engagement'. I'm shifting the production cadence to 4K Wide-Screen to dominate the desktop feed.
-INFO:brand_brain.orchestrator:🐝 [Swarm] Arbiter: Cross-referencing swarm output with Brand DNA. Logic check passed. No hallucinations detected in the creative stack.
-INFO:brand_brain.orchestrator:🐝 [Swarm] Producer: Manifestation pipeline locked. I'm creating a 'Director's Cut' sequence using ALL available media fragments to ensure the story is complete. Ready for ignition.
+INFO:     127.0.0.1:36092 - "GET /api/status HTTP/1.1" 200 OK
