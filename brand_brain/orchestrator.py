@@ -31,6 +31,14 @@ class PlatformConnector:
         return self.platforms[name.lower()]
 
     def post(self, platform: str, content: Dict[str, Any]):
+        if platform.lower() == "local_export":
+            export_path = Path("library/exports")
+            export_path.mkdir(parents=True, exist_ok=True)
+            file_name = f"manifest_{int(time.time())}.json"
+            with open(export_path / file_name, 'w') as f:
+                json.dump(content, f, indent=4)
+            return {"status": "success", "message": f"Exported to {export_path / file_name}"}
+
         p = self.platforms.get(platform.lower())
         if not p:
             return {"status": "error", "message": f"Platform {platform} not found"}
@@ -98,6 +106,22 @@ class AgentSwarm:
         msg = "Manifestation pipeline locked. I'm creating a 'Director's Cut' sequence using ALL available media fragments to ensure the story is complete. Ready for ignition."
         await self._broadcast("Producer", msg, ws_manager)
 
+        # Update Workflow Object with the final "Collaborated" plan
+        for wf_id, wf in self.orch.active_workflows.items():
+            if wf['asset'] == asset_info:
+                wf['plan'] = {
+                    "title": f"Swarm Manifest: {asset_info}",
+                    "story": "A collaborative production plan manifested by the Agent Swarm.",
+                    "tasks": [
+                        ["Narrator", "Wove user spark into brand core."],
+                        ["Visionary", "Locked visual geometry and hyper-textures."],
+                        ["Liaison", "Integrated SDXL for creative synthesis."],
+                        ["Strategist", "Aligned production with market engagement."],
+                        ["Producer", "Finalized Director's Cut sequence."]
+                    ],
+                    "platform": "local_export"
+                }
+
     async def _broadcast(self, agent: str, message: str, ws_manager):
         data = {
             "type": "swarm_talk",
@@ -117,8 +141,8 @@ class MasterOrchestrator:
     def __init__(self, workspace_root: str):
         self.workspace_root = Path(workspace_root)
         
-        # Check if we are already in the brand-engine directory
-        if self.workspace_root.name == "brand-engine":
+        # Check if we are already in a directory that contains brand_brain
+        if (self.workspace_root / "brand_brain").exists() or self.workspace_root.name == "brand-engine":
             self.project_root = self.workspace_root
         else:
             self.project_root = self.workspace_root / "brand-engine"
@@ -237,7 +261,12 @@ class MasterOrchestrator:
                     "type": "No-Key Manifestation" if is_free else "Premium Production",
                     "description": desc,
                     "status": "pending",
-                    "free": is_free
+                    "free": is_free,
+                    "plan": {
+                        "title": f"Manifesting {path.stem}",
+                        "story": "Analyzing asset DNA...",
+                        "tasks": [["System", "Initializing Swarm"]]
+                    }
                 })
                 self.active_workflows[w_id] = proposals[-1]
         

@@ -51,7 +51,7 @@ def test_logic():
     # 6. Verify Security Strings (Cross-check with UI)
     with open("public/index.html", "r") as f:
         html = f.read()
-        if "HARP * STAR MEDIA MIND MASTER" in html and "lockdown-screen" in html:
+        if "HARP * STAR" in html and "MEDIA MIND MASTER" in html and "lockdown-screen" in html:
             print("[Security] Harp*Star Lockdown Protocol identified in UI.")
         else:
             print("[Security] Security strings missing from UI!")

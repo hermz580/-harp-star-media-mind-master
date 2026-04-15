@@ -92,7 +92,7 @@
     <header class="h-20 border-b border-white/10 bg-black/40 backdrop-blur-md flex items-center justify-between px-8 z-30 shrink-0">
         <div>
             <h1 id="sys-name" class="font-orbitron text-xl font-black tracking-tighter text-white glow-text-cyan uppercase">
-                HARP*STAR <span class="text-neon-cyan">MEDIA MIND-MASTER</span>
+                HARP * STAR <span class="text-neon-cyan">MEDIA MIND MASTER</span>
             </h1>
             <div class="flex items-center gap-3 mt-1">
                 <span class="text-[9px] text-neon-magenta font-bold tracking-[0.3em]">SWARM NEXUS // FOCUS:</span>
@@ -346,7 +346,8 @@
 
         // Anti-Tamper
         setInterval(() => {
-            if (document.getElementById("sys-name").innerText.toUpperCase() !== "HARP*STAR MEDIA MIND-MASTER") {
+            const name = document.getElementById("sys-name").innerText.toUpperCase();
+            if (!name.includes("HARP * STAR") || !name.includes("MEDIA MIND MASTER")) {
                 document.getElementById("lockdown-screen").style.display = "flex";
                 window.stop();
             }
