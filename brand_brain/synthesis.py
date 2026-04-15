@@ -31,16 +31,23 @@ class DeepScanner:
     def scan(self) -> Dict[str, Any]:
         logger.info(f"🚀 Initializing Deep Scan of {self.root_path}")
         
-        # Scan for context (READMEs, documentation, project summaries)
-        for path in self.root_path.rglob('*.md'):
-            if 'node_modules' not in str(path) and '.git' not in str(path):
+        # Scan for context (READMEs, documentation, project summaries, text files)
+        # [Update 51: Universal Media Ingester (Text/Doc Focus)]
+        context_exts = ('.md', '.txt', '.py', '.js', '.html', '.css', '.pdf')
+        for path in self.root_path.rglob('*'):
+            if path.suffix.lower() in context_exts and 'node_modules' not in str(path) and '.git' not in str(path):
                 try:
-                    with open(path, 'r', encoding='utf-8') as f:
-                        content = f.read(2000) # Get first 2k chars for context
-                        self.context_files.append({
-                            "path": str(path.relative_to(self.root_path)),
-                            "snippet": content
-                        })
+                    # PDF Stub logic
+                    if path.suffix.lower() == '.pdf':
+                        content = f"[Apex 51] PDF DNA: {path.name} (Binary content - awaiting OCR/Whisper sync)"
+                    else:
+                        with open(path, 'r', encoding='utf-8') as f:
+                            content = f.read(2000) # Get first 2k chars for context
+
+                    self.context_files.append({
+                        "path": str(path.relative_to(self.root_path)),
+                        "snippet": content
+                    })
                 except:
                     continue
 

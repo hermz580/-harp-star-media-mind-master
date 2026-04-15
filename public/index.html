@@ -104,6 +104,9 @@
             <button onclick="toggleTheme()" class="p-2 text-slate-400 hover:text-white transition-colors">
                 <span class="material-symbols-outlined text-sm">palette</span>
             </button>
+            <button onclick="openBrandBible()" class="p-2 text-slate-400 hover:text-neon-magenta transition-colors">
+                <span class="material-symbols-outlined text-sm">auto_stories</span>
+            </button>
             <button onclick="executeSync()" class="bg-neon-cyan/10 border border-neon-cyan/40 text-neon-cyan px-4 py-1.5 font-orbitron text-[10px] font-bold tracking-widest hover:bg-neon-cyan hover:text-black transition-all">SYNC DNA</button>
             <button onclick="discoverSystem()" class="bg-amber-500/10 border border-amber-500/40 text-amber-500 px-4 py-1.5 font-orbitron text-[10px] font-bold tracking-widest hover:bg-amber-500 hover:text-black transition-all">SCAN SYSTEM</button>
         </div>
@@ -183,6 +186,51 @@
             </div>
             <div class="p-4 text-[10px] text-slate-500 font-mono">
                 <div class="flex justify-between mb-2"><span>CTRL+K TO CLOSE</span> <span>ESC TO CANCEL</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update 54: The Living Brand Bible Overlay -->
+    <div id="brand-bible" class="hidden fixed inset-0 bg-sci-bg/95 backdrop-blur-2xl z-[160] p-12 overflow-y-auto">
+        <div class="max-w-5xl mx-auto">
+            <div class="flex justify-between items-end border-b border-neon-cyan/30 pb-6 mb-10">
+                <div>
+                    <h2 class="font-orbitron text-4xl font-black text-white glow-text-cyan tracking-tighter uppercase">THE BRAND BIBLE</h2>
+                    <p class="font-mono text-[10px] text-neon-cyan/60 mt-2 uppercase tracking-widest">Autonomous Living Style Guide // Apex 54</p>
+                </div>
+                <button onclick="document.getElementById('brand-bible').classList.add('hidden')" class="sci-box px-6 py-2 text-[10px] text-slate-400 hover:text-white border-white/10">CLOSE_NEXUS</button>
+            </div>
+
+            <div class="grid grid-cols-12 gap-8">
+                <div class="col-span-8 space-y-8">
+                    <div class="sci-box p-8 border-white/5">
+                        <h3 class="font-orbitron text-xs font-bold text-slate-400 mb-6 uppercase tracking-widest border-l-2 border-neon-magenta pl-4">Manifested Identity</h3>
+                        <p id="bible-identity" class="font-mono text-sm text-slate-300 leading-relaxed italic">Synchronizing DNA...</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-8">
+                        <div class="sci-box p-6 border-white/5">
+                            <h3 class="font-orbitron text-[10px] font-bold text-slate-500 mb-4 uppercase">Keywords</h3>
+                            <div id="bible-keywords" class="flex flex-wrap gap-2"></div>
+                        </div>
+                        <div class="sci-box p-6 border-white/5">
+                            <h3 class="font-orbitron text-[10px] font-bold text-slate-500 mb-4 uppercase">Core Tone</h3>
+                            <div id="bible-tone" class="text-xl font-orbitron text-white">Vibrant</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-span-4 space-y-8">
+                    <div class="sci-box p-6 border-white/5">
+                        <h3 class="font-orbitron text-[10px] font-bold text-slate-500 mb-6 uppercase tracking-widest">Neural Color Palette</h3>
+                        <div id="bible-colors" class="space-y-4"></div>
+                    </div>
+
+                    <div class="sci-box p-6 border-neon-magenta/20 bg-neon-magenta/5">
+                        <h3 class="font-orbitron text-[10px] font-bold text-neon-magenta mb-2 uppercase">Active Focus</h3>
+                        <p id="bible-focus" class="text-xs text-white font-mono italic font-bold">Awaiting Calibration...</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -553,7 +601,29 @@
             osc.stop(audioCtx.currentTime + 0.5);
         }
 
-        // Update 22: Graph Drawing Logic
+        // Update 54: Brand Bible Logic
+        async function openBrandBible() {
+            const bible = await req("/api/brand/bible");
+            document.getElementById('bible-identity').innerText = typeof bible.identity === 'string' ? bible.identity : JSON.stringify(bible.identity, null, 2);
+            document.getElementById('bible-focus').innerText = bible.active_focus;
+            document.getElementById('bible-tone').innerText = bible.tone;
+
+            document.getElementById('bible-keywords').innerHTML = bible.keywords.map(k => `
+                <span class="bg-neon-cyan/10 text-neon-cyan border border-neon-cyan/20 px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest">${k}</span>
+            `).join('');
+
+            document.getElementById('bible-colors').innerHTML = bible.color_palette.map(c => `
+                <div class="flex items-center gap-4">
+                    <div class="size-10 rounded shadow-lg border border-white/10" style="background-color: ${c}"></div>
+                    <span class="font-mono text-[10px] text-slate-500 uppercase">${c}</span>
+                </div>
+            `).join('');
+
+            document.getElementById('brand-bible').classList.remove('hidden');
+            playSciFiSound(660);
+        }
+
+        // Update 59: Enhanced Neural Topology Physics (Apex)
         function drawGraph() {
             const canvas = document.getElementById('graph-canvas');
             if (!canvas) return;
@@ -561,38 +631,45 @@
             canvas.width = canvas.offsetWidth;
             canvas.height = canvas.offsetHeight;
 
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.strokeStyle = 'rgba(0, 255, 204, 0.1)';
-            ctx.lineWidth = 1;
-
             const nodes = [];
-            for (let i = 0; i < 15; i++) {
+            for (let i = 0; i < 25; i++) {
                 nodes.push({
                     x: Math.random() * canvas.width,
                     y: Math.random() * canvas.height,
-                    vx: (Math.random() - 0.5) * 0.5,
-                    vy: (Math.random() - 0.5) * 0.5
+                    vx: (Math.random() - 0.5) * 0.8,
+                    vy: (Math.random() - 0.5) * 0.8,
+                    size: Math.random() * 2 + 1,
+                    type: i % 5 === 0 ? 'magenta' : 'cyan'
                 });
             }
 
             function animate() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 nodes.forEach(n => {
+                    // Slight attraction to center
+                    n.vx += (canvas.width/2 - n.x) * 0.00001;
+                    n.vy += (canvas.height/2 - n.y) * 0.00001;
+
                     n.x += n.vx; n.y += n.vy;
-                    if (n.x < 0 || n.x > canvas.width) n.vx *= -1;
-                    if (n.y < 0 || n.y > canvas.height) n.vy *= -1;
+                    if (n.x < 0 || n.x > canvas.width) n.vx *= -1.1;
+                    if (n.y < 0 || n.y > canvas.height) n.vy *= -1.1;
+
+                    // Friction
+                    n.vx *= 0.999; n.vy *= 0.999;
 
                     ctx.beginPath();
-                    ctx.arc(n.x, n.y, 1, 0, Math.PI * 2);
-                    ctx.fillStyle = 'rgba(0, 255, 204, 0.5)';
+                    ctx.arc(n.x, n.y, n.size, 0, Math.PI * 2);
+                    ctx.fillStyle = n.type === 'magenta' ? 'rgba(255, 0, 255, 0.4)' : 'rgba(0, 255, 204, 0.4)';
                     ctx.fill();
 
                     nodes.forEach(m => {
                         const dist = Math.hypot(n.x - m.x, n.y - m.y);
-                        if (dist < 50) {
+                        if (dist < 80) {
                             ctx.beginPath();
                             ctx.moveTo(n.x, n.y);
                             ctx.lineTo(m.x, m.y);
+                            ctx.strokeStyle = `rgba(0, 255, 204, ${0.15 * (1 - dist/80)})`;
+                            ctx.lineWidth = 0.5;
                             ctx.stroke();
                         }
                     });

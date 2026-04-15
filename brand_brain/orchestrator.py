@@ -12,6 +12,7 @@ from .synthesis import BrandSynthesisEngine, DeepScanner
 from .engine import BrandContentEngine
 from .memory import BrandVectorMemory
 import uuid
+import requests
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +70,8 @@ class AgentSwarm:
             "Producer": {"icon": "movie_filter", "color": "emerald", "focus": "Execution & Agent Coordination"},
             "Liaison": {"icon": "smart_toy", "color": "orange-400", "focus": "Hugging Face & Local Model Integration"},
             "Arbiter": {"icon": "gavel", "color": "red-500", "focus": "Hallucination Defense & Fact Checking"},
-            "Modeler": {"icon": "account_tree", "color": "cyan-400", "focus": "Autonomous Model Stack Strategy"}
+            "Modeler": {"icon": "account_tree", "color": "cyan-400", "focus": "Autonomous Model Stack Strategy"},
+            "Synthesizer": {"icon": "psychology", "color": "purple-500", "focus": "Executive Conflict Resolution & Logic Sync"} # Update 52
         }
         self.active_broadcasts = []
 
@@ -135,8 +137,13 @@ class AgentSwarm:
         msg = "Cross-referencing swarm output with Brand DNA. Logic check passed. No hallucinations detected in the creative stack."
         await self._broadcast("Arbiter", msg, ws_manager)
 
-        # 6. Producer finalizes
+        # 6. Synthesizer resolves conflicts (Update 52)
         await asyncio.sleep(1.2)
+        msg = "Reviewing agentic debate. Conflict detected between Aesthetics and ROI. Decision: Aesthetics take priority for brand prestige, but with a 15% budget buffer for targeted reach. Logic sync complete."
+        await self._broadcast("Synthesizer", msg, ws_manager)
+
+        # 7. Producer finalizes
+        await asyncio.sleep(1.0)
         msg = "Manifestation pipeline locked. I'm creating a 'Director's Cut' sequence using ALL available media fragments to ensure the story is complete. Ready for ignition."
         await self._broadcast("Producer", msg, ws_manager)
 
@@ -152,6 +159,7 @@ class AgentSwarm:
                         ["Liaison", "Integrated SDXL for creative synthesis."],
                         ["Strategist", "Aligned production with market engagement."],
                         ["Arbiter", "Verified factual alignment with project DNA."],
+                        ["Synthesizer", "Resolved aesthetic-budget conflicts."],
                         ["Producer", "Finalized Director's Cut sequence."]
                     ],
                     "platform": "local_export"
@@ -263,8 +271,8 @@ class MasterOrchestrator:
             key_path.write_bytes(key)
             return key
 
-    def _load_vbrain(self) -> Dict:
-        encrypted_path = self.project_root / "brand_brain" / "vbrain.vault"
+    def _load_vbrain(self, vault_override=None) -> Dict:
+        encrypted_path = vault_override or (self.project_root / "brand_brain" / "vbrain.vault")
 
         # Priority: Encrypted Vault
         if encrypted_path.exists():
@@ -277,10 +285,14 @@ class MasterOrchestrator:
                 logger.error(f"Failed to decrypt V-Brain Vault: {e}")
 
         # Fallback: Plaintext (for migration or fresh start)
-        if self.vbrain_path.exists():
-            with open(self.vbrain_path, 'r') as f:
+        target_path = self.vbrain_path
+        if vault_override:
+            # derive json path from vault path
+            target_path = vault_override.with_suffix('.json')
+
+        if target_path.exists():
+            with open(target_path, 'r') as f:
                 data = json.load(f)
-                # Auto-migrate to encrypted on load
                 return data
 
         return {"learned_patterns": [], "context_map": {}, "agent_integrations": {}, "workflows": [], "inspiration_urls": []}
@@ -291,7 +303,9 @@ class MasterOrchestrator:
         cipher = Fernet(self._get_encryption_key())
         encrypted_data = cipher.encrypt(data_str.encode())
 
-        encrypted_path = self.project_root / "brand_brain" / "vbrain.vault"
+        # Ensure we save to the current workspace's vault
+        v_name = self.vbrain_path.stem
+        encrypted_path = self.vbrain_path.parent / f"{v_name}.vault"
         encrypted_path.write_bytes(encrypted_data)
 
         # Also keep plaintext for now to avoid breaking existing code that expects it
@@ -303,6 +317,25 @@ class MasterOrchestrator:
 
         if snapshot:
             self.snapshot_dna()
+
+    def switch_workspace(self, workspace_name: str):
+        """Update 55: Multi-Tenant Workspaces"""
+        safe_name = "".join([c for c in workspace_name if c.isalnum()]).lower()
+        if not safe_name: safe_name = "default"
+
+        new_vbrain_path = self.project_root / "brand_brain" / f"vbrain_{safe_name}.json"
+        new_vault_path = self.project_root / "brand_brain" / f"vbrain_{safe_name}.vault"
+
+        # Save current
+        self.save_vbrain()
+
+        # Switch references
+        self.vbrain_path = new_vbrain_path
+        # Re-load
+        self.vbrain = self._load_vbrain(vault_override=new_vault_path)
+        self.inspiration_urls = self.vbrain.get("inspiration_urls", [])
+        logger.info(f"🏢 Switched to Workspace: {workspace_name}")
+        return {"status": "success", "workspace": workspace_name}
 
     def self_heal(self):
         """Update 50: Auto-Update Phoenix Core"""

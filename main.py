@@ -3,8 +3,11 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 import os
+import json
+import time
 import uvicorn
 import shutil
+import psutil
 from typing import List, Dict, Any
 from brand_brain.orchestrator import MasterOrchestrator
 
@@ -54,13 +57,22 @@ async def websocket_endpoint(websocket: WebSocket):
 
 @app.get("/api/status")
 async def get_status():
+    # [Update 53: Resource Guard]
+    cpu_usage = psutil.cpu_percent()
+    ram = psutil.virtual_memory()
+
     return {
         "roots": orch.discovery_paths,
         "agents": orch.vbrain.get("agent_integrations", {}),
         "platforms": orch.platforms.platforms,
         "bucket_path": str(orch.bucket_path),
         "global_focus": orch.global_focus,
-        "vbrain": orch.vbrain
+        "vbrain": orch.vbrain,
+        "resources": {
+            "cpu": f"{cpu_usage}%",
+            "ram": f"{ram.percent}%",
+            "status": "Optimal" if cpu_usage < 80 else "High Load"
+        }
     }
 
 @app.post("/api/focus/update")
@@ -174,6 +186,32 @@ async def execute_sync():
     orch.learn()
     orch.sync_dna()
     return {"status": "success"}
+
+@app.get("/api/brand/bible")
+async def get_brand_bible():
+    """Update 54: The Living Brand Bible"""
+    vbrain = orch.vbrain
+    profile_path = orch.project_root / "brand_brain" / "brand_profile.json"
+    profile = {}
+    if profile_path.exists():
+        with open(profile_path, 'r') as f:
+            profile = json.load(f)
+
+    # Synthesize style guide
+    bible = {
+        "identity": profile.get("brand_identity", vbrain.get("identity_summary", "Awaiting manifestation...")),
+        "active_focus": orch.global_focus,
+        "keywords": ["Empowerment", "Innovation", "Sovereignty"], # Mocked from profile
+        "color_palette": ["#00F2FF", "#FF00E5", "#0A0A0F"],
+        "tone": "Vibrant / Authoritative",
+        "last_updated": vbrain.get("last_learning_session", time.time())
+    }
+    return bible
+
+@app.post("/api/workspace/switch")
+async def switch_workspace(name: str = Body(..., embed=True)):
+    res = orch.switch_workspace(name)
+    return res
 
 app.mount("/bucket", StaticFiles(directory=str(orch.bucket_path)), name="bucket")
 app.mount("/processed", StaticFiles(directory=str(orch.processed_path)), name="processed")
