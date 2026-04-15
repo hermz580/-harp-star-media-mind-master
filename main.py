@@ -99,12 +99,33 @@ async def upload_to_bucket(files: List[UploadFile] = File(...)):
 @app.post("/api/workflow/propose")
 async def propose_workflows(background_tasks: BackgroundTasks, body: dict = Body(...)):
     user_spark = body.get("user_spark")
+    personality = body.get("personality", {"creativity": 0.7, "logic": 0.5})
+    model_override = body.get("model_override", "auto")
+
+    # [Update 10: Agent Personality Tuning]
+    # In practice, creativity slider maps to temperature
+    temp = float(personality.get("creativity", 0.7))
+    orch.vbrain["current_personality"] = personality
+    orch.vbrain["model_override"] = model_override
+
     workflows = orch.process_bucket(user_spark=user_spark)
     if workflows:
         # Trigger real-time swarm debate in the background
         asset_name = workflows[0]['asset']
         focus = orch.global_focus
-        background_tasks.add_task(orch.swarm.collaborate, asset_name, focus, ws_manager, user_spark)
+
+        # Determine effective model stack
+        effective_stack = model_override
+        if effective_stack == "auto":
+            is_local = any(kw in focus.lower() for kw in ['privacy', 'sovereignty', 'secure', 'local'])
+            effective_stack = "lmstudio" if is_local else "gemini"
+
+        # Pass parameters to swarm
+        params = {
+            "temperature": temp,
+            "model_stack": effective_stack
+        }
+        background_tasks.add_task(orch.swarm.collaborate, asset_name, focus, ws_manager, user_spark, params)
     return {"status": "success", "workflows": workflows}
 
 @app.get("/api/workflow/pending")

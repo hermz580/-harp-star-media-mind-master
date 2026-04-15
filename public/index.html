@@ -201,6 +201,23 @@
                 <div class="flex items-center justify-center h-full text-slate-600 text-xs italic tracking-widest">AWAITING ASSET INJECTION...</div>
             </div>
 
+            <!-- Update: Model Stack Selector -->
+            <div id="model-stack-config" class="sci-box p-4 border-cyan-400/30 bg-black/40">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-cyan-400 text-sm">account_tree</span>
+                        <span class="font-orbitron text-[9px] font-bold text-slate-400 uppercase">Model Stack Logic</span>
+                    </div>
+                    <select id="model-override" class="bg-black/80 border border-white/10 text-[9px] text-cyan-400 font-mono px-2 py-1 rounded">
+                        <option value="auto">AUTO-STRATEGIST (SUGGESTED)</option>
+                        <option value="gemini">GOOGLE GEMINI (CLOUD)</option>
+                        <option value="lmstudio">LM STUDIO (LOCAL)</option>
+                        <option value="ollama">OLLAMA (LOCAL)</option>
+                    </select>
+                </div>
+                <div id="stack-suggestion-text" class="text-[8px] text-slate-500 italic font-mono">Suggested: Balancing local privacy with cloud performance...</div>
+            </div>
+
             <!-- Creative Control Pad -->
             <div class="sci-box p-5 border-white/10 bg-black/40">
                 <div class="flex items-center gap-3 mb-3">
@@ -228,6 +245,10 @@
                     <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Swarm Terminal</span>
                     <span class="text-[8px] text-neon-lime animate-pulse font-mono">LIVE_FEED</span>
                 </div>
+                <!-- Update 6: Trend Suggestions in Terminal -->
+                <div id="trend-bar" class="px-4 py-1 bg-neon-magenta/10 border-b border-neon-magenta/20 text-[7px] text-neon-magenta font-bold tracking-widest uppercase flex justify-between">
+                    <span>Active Trends: AI Sovereignty, Seattle Tech, Minimalist Manifestation</span>
+                </div>
                 <div id="agent-terminal" class="flex-grow p-4 overflow-y-auto space-y-4 font-mono text-[10px] bg-black/20"></div>
                 <div class="p-4 border-t border-white/10 flex items-center gap-3 bg-black/40">
                     <span class="text-neon-cyan text-xs font-bold font-mono">></span>
@@ -236,6 +257,30 @@
             </div>
         </aside>
     </main>
+
+    <!-- Update 47: Brand Template Hub Overlay -->
+    <div id="template-hub" class="hidden fixed inset-0 bg-black/90 backdrop-blur-xl z-[150] p-10">
+        <div class="max-w-4xl mx-auto">
+            <div class="flex justify-between items-center mb-10">
+                <h2 class="font-orbitron text-2xl font-bold text-white tracking-widest">BRAND TEMPLATE HUB</h2>
+                <button onclick="document.getElementById('template-hub').classList.add('hidden')" class="text-slate-500 hover:text-white">CLOSE</button>
+            </div>
+            <div class="grid grid-cols-3 gap-6">
+                <div class="sci-box p-6 border-neon-cyan/30 hover:border-neon-cyan transition-all cursor-pointer">
+                    <h4 class="font-orbitron text-xs font-bold text-neon-cyan mb-2">PIONEER CORE</h4>
+                    <p class="text-[9px] text-slate-500 italic">"Focus on rugged exploration and community grit."</p>
+                </div>
+                <div class="sci-box p-6 border-neon-magenta/30 hover:border-neon-magenta transition-all cursor-pointer">
+                    <h4 class="font-orbitron text-xs font-bold text-neon-magenta mb-2">NEON SOVEREIGN</h4>
+                    <p class="text-[9px] text-slate-500 italic">"High-gloss tech with an emphasis on data protection."</p>
+                </div>
+                <div class="sci-box p-6 border-white/10 hover:border-white transition-all cursor-pointer opacity-50">
+                    <h4 class="font-orbitron text-xs font-bold text-white mb-2">VOID MINIMAL</h4>
+                    <p class="text-[9px] text-slate-500 italic">"Silent, precise, and extremely focused."</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <footer class="h-8 bg-black/80 border-t border-white/10 flex items-center justify-between px-8 z-30 shrink-0">
         <div class="flex items-center gap-6">
@@ -261,6 +306,13 @@
         async function load() {
             const s = await req("/api/status");
             if (s.status === 'error') return;
+
+            // Render Sentiment (Update 5)
+            const sentiment = s.vbrain.sentiment_history || [];
+            if (sentiment.length > 0) {
+                const last = sentiment[sentiment.length - 1];
+                setThought(`Tone: ${last.score >= 0 ? 'Empowered' : 'Cautious'} (${last.score})`);
+            }
             
             document.getElementById("focus-input").value = s.global_focus || "BRAND SOVEREIGNTY";
 
@@ -326,10 +378,20 @@
         async function proposeWorkflows() {
             setThought("Swarm analyzing media DNA...");
             const user_spark = document.getElementById("creative-steering").value;
+
+            // Collect personality sliders
+            const sliders = document.querySelectorAll('input[type="range"]');
+            const personality = {
+                creativity: sliders[0].value / 100,
+                logic: sliders[1].value / 100
+            };
+
+            const model_override = document.getElementById('model-override').value;
+
             await req("/api/workflow/propose", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ user_spark })
+                body: JSON.stringify({ user_spark, personality, model_override })
             });
             load();
         }
@@ -414,6 +476,7 @@
                 if (cmd === 'sync') executeSync();
                 if (cmd === 'scan') discoverSystem();
                 if (cmd === 'theme') toggleTheme();
+                if (cmd === 'templates') document.getElementById('template-hub').classList.remove('hidden');
                 if (cmd.startsWith('search ')) {
                     const q = cmd.replace('search ', '');
                     const res = await req(`/api/search?q=${q}`);
@@ -448,6 +511,9 @@
         }
 
         function renderAgentSpeech(data) {
+            if (data.agent === 'Modeler') {
+                document.getElementById('stack-suggestion-text').innerText = data.message;
+            }
             const container = document.getElementById("agent-terminal");
             const html = `
                 <div class="agent-talk-bubble border-l-2 border-${data.color} pl-3 py-1 bg-white/5 rounded-r">

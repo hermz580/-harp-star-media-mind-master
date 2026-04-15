@@ -4,6 +4,7 @@ import logging
 from pathlib import Path
 from typing import Dict, List, Any
 import requests
+import base64
 from bs4 import BeautifulSoup
 import google.generativeai as genai
 
@@ -105,11 +106,48 @@ class BrandSynthesisEngine:
                 clusters.append(line.strip())
         return clusters
 
+    def analyze_asset_vision(self, file_path: Path) -> str:
+        """Update 2: Vision DNA Extraction"""
+        if not self.api_key:
+            return "Vision analysis skipped: No API Key."
+
+        try:
+            with open(file_path, "rb") as f:
+                image_data = f.read()
+
+            # Simple heuristic to avoid uploading huge files for basic DNA
+            if len(image_data) > 4 * 1024 * 1024:
+                return "File too large for fast vision sync."
+
+            model = genai.GenerativeModel('gemini-1.5-flash')
+            response = model.generate_content([
+                "Describe the visual style, dominant colors, and mood of this brand asset for DNA extraction. Be concise.",
+                {"mime_type": "image/jpeg", "data": image_data}
+            ])
+            return response.text
+        except Exception as e:
+            logger.error(f"Vision analysis failed for {file_path.name}: {e}")
+            return f"Vision error: {str(e)}"
+
     def manifest_brand(self, external_urls: List[str] = []) -> Dict[str, Any]:
         """Deep Synthesis: Scan, Scrap, and Manifest"""
         # 1. Internal Physical Discovery
         discovery_data = self.scanner.scan()
         
+        # 1b. Enhanced Vision Sync (Update 2)
+        vision_insights = []
+        asset_exts = ('.png', '.jpg', '.jpeg', '.webp')
+        # Only analyze first 3 assets to keep sync fast
+        count = 0
+        for asset in discovery_data.get('assets', []):
+            if any(asset['path'].lower().endswith(ext) for ext in asset_exts):
+                full_path = Path(self.root_path) / asset['path']
+                if full_path.exists():
+                    insight = self.analyze_asset_vision(full_path)
+                    vision_insights.append({"asset": asset['path'], "insight": insight})
+                    count += 1
+                    if count >= 3: break
+
         # 2. External Intelligence Discovery
         external_context = []
         for url in external_urls:
@@ -123,6 +161,7 @@ class BrandSynthesisEngine:
         - Assets: {json.dumps(discovery_data['assets'])}
         - Project DNA: {json.dumps(discovery_data['dna_captured'])}
         - Context Snippets: {json.dumps(discovery_data['context_snippets'])}
+        - Vision Insights: {json.dumps(vision_insights)}
         
         EXTERNAL CONTEXT:
         {json.dumps(external_context)}

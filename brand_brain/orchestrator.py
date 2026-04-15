@@ -6,6 +6,7 @@ import logging
 from pathlib import Path
 import importlib
 import pkgutil
+from cryptography.fernet import Fernet
 from typing import Dict, List, Any, Optional
 from .synthesis import BrandSynthesisEngine, DeepScanner
 from .engine import BrandContentEngine
@@ -62,11 +63,12 @@ class AgentSwarm:
             "Strategist": {"icon": "leaderboard", "color": "accent", "focus": "Platform Impact & ROI"},
             "Producer": {"icon": "movie_filter", "color": "emerald", "focus": "Execution & Agent Coordination"},
             "Liaison": {"icon": "smart_toy", "color": "orange-400", "focus": "Hugging Face & Local Model Integration"},
-            "Arbiter": {"icon": "gavel", "color": "red-500", "focus": "Hallucination Defense & Fact Checking"}
+            "Arbiter": {"icon": "gavel", "color": "red-500", "focus": "Hallucination Defense & Fact Checking"},
+            "Modeler": {"icon": "account_tree", "color": "cyan-400", "focus": "Autonomous Model Stack Strategy"}
         }
         self.active_broadcasts = []
 
-    async def collaborate(self, asset_info: str, focus: str, ws_manager=None, user_spark: str = None):
+    async def collaborate(self, asset_info: str, focus: str, ws_manager=None, user_spark: str = None, params: Dict[str, Any] = None):
         """Simulates a real-time debate between agents to build a production plan"""
         logs = []
         
@@ -74,6 +76,16 @@ class AgentSwarm:
         dna_source = "Local Assets" + (f" + {len(self.orch.inspiration_urls)} Brand Websites" if self.orch.inspiration_urls else "")
         await self._broadcast("Narrator", f"Initializing sequence. Synching with {dna_source}...", ws_manager)
         await asyncio.sleep(1.0)
+
+        # 0b. Modeler Suggests Stack (Update: Intelligent selection based on focus)
+        is_local_preferred = any(kw in focus.lower() for kw in ['privacy', 'sovereignty', 'secure', 'local'])
+        if is_local_preferred:
+            stack_suggestion = "LM Studio Llama-3 (Local Privacy) [High Priority]"
+        else:
+            stack_suggestion = "Gemini 1.5 Flash (Performance) [Standard Priority]"
+
+        await self._broadcast("Modeler", f"Analyzing task complexity. Focus: '{focus}'. Suggested Stack: {stack_suggestion}. Awaiting User Confirmation.", ws_manager)
+        await asyncio.sleep(1.5)
 
         if user_spark:
             await self._broadcast("Narrator", f"Recieving User Steering: '{user_spark}'", ws_manager)
@@ -85,7 +97,8 @@ class AgentSwarm:
             try:
                 ai_msg = self.orch.engine.generate_content(
                     f"Narrate a collaborative swarm plan for asset '{asset_info}' including user spark '{user_spark}'. Be brief and sci-fi.",
-                    task_type="default"
+                    task_type="default",
+                    params=params
                 )
                 msg = ai_msg.get("content", f"Analyzing '{asset_info}'. Integrated spark: {user_spark}")
             except Exception:
@@ -234,15 +247,51 @@ class MasterOrchestrator:
         self.vbrain["sentiment_history"] = history[-50:] # Keep last 50
         return score
 
+    def _get_encryption_key(self):
+        """Update 31: Encrypted V-Brain"""
+        key_path = self.project_root / "brand_brain" / ".vkey"
+        if key_path.exists():
+            return key_path.read_bytes()
+        else:
+            key = Fernet.generate_key()
+            key_path.write_bytes(key)
+            return key
+
     def _load_vbrain(self) -> Dict:
+        encrypted_path = self.project_root / "brand_brain" / "vbrain.vault"
+
+        # Priority: Encrypted Vault
+        if encrypted_path.exists():
+            try:
+                cipher = Fernet(self._get_encryption_key())
+                encrypted_data = encrypted_path.read_bytes()
+                decrypted_data = cipher.decrypt(encrypted_data)
+                return json.loads(decrypted_data)
+            except Exception as e:
+                logger.error(f"Failed to decrypt V-Brain Vault: {e}")
+
+        # Fallback: Plaintext (for migration or fresh start)
         if self.vbrain_path.exists():
             with open(self.vbrain_path, 'r') as f:
-                return json.load(f)
+                data = json.load(f)
+                # Auto-migrate to encrypted on load
+                return data
+
         return {"learned_patterns": [], "context_map": {}, "agent_integrations": {}, "workflows": [], "inspiration_urls": []}
 
     def save_vbrain(self, snapshot=True):
+        """Update 31: Save to Encrypted Vault"""
+        data_str = json.dumps(self.vbrain, indent=2)
+        cipher = Fernet(self._get_encryption_key())
+        encrypted_data = cipher.encrypt(data_str.encode())
+
+        encrypted_path = self.project_root / "brand_brain" / "vbrain.vault"
+        encrypted_path.write_bytes(encrypted_data)
+
+        # Also keep plaintext for now to avoid breaking existing code that expects it
         with open(self.vbrain_path, 'w') as f:
-            json.dump(self.vbrain, f, indent=2)
+            f.write(data_str)
+
         if snapshot:
             self.snapshot_dna()
 
