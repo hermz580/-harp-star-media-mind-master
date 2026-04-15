@@ -4,7 +4,6 @@ import logging
 from pathlib import Path
 from typing import Dict, List, Any
 import requests
-import base64
 from bs4 import BeautifulSoup
 import google.generativeai as genai
 
@@ -19,6 +18,15 @@ class DeepScanner:
         self.context_files = []
         self.assets = []
         self.code_fingerprints = []
+
+    def _extract_clusters(self, content: str) -> List[str]:
+        """Simplified logic clustering for Recursive Code Mapping"""
+        clusters = []
+        lines = content.split('\n')
+        for line in lines:
+            if 'class ' in line or 'def ' in line or 'function ' in line:
+                clusters.append(line.strip())
+        return clusters
 
     def scan(self) -> Dict[str, Any]:
         logger.info(f"🚀 Initializing Deep Scan of {self.root_path}")
@@ -94,17 +102,11 @@ class BrandSynthesisEngine:
         self.scanner = DeepScanner(root_path)
         self.intelligence = AssetIntelligence()
         self.api_key = os.getenv("GEMINI_API_KEY")
-        genai.configure(api_key=self.api_key)
-        self.model = genai.GenerativeModel('gemini-1.5-pro')
-
-    def _extract_clusters(self, content: str) -> List[str]:
-        """Simplified logic clustering for Recursive Code Mapping"""
-        clusters = []
-        lines = content.split('\n')
-        for line in lines:
-            if 'class ' in line or 'def ' in line or 'function ' in line:
-                clusters.append(line.strip())
-        return clusters
+        if self.api_key:
+            genai.configure(api_key=self.api_key)
+            self.model = genai.GenerativeModel('gemini-1.5-pro')
+        else:
+            self.model = None
 
     def analyze_asset_vision(self, file_path: Path) -> str:
         """Update 2: Vision DNA Extraction"""
@@ -151,7 +153,9 @@ class BrandSynthesisEngine:
         # 2. External Intelligence Discovery
         external_context = []
         for url in external_urls:
-            external_context.append(self.intelligence.scrape_url(url))
+            # Handle if url is a dict or string
+            actual_url = url['url'] if isinstance(url, dict) else url
+            external_context.append(self.intelligence.scrape_url(actual_url))
 
         # 3. Autonomous Manifestation Prompt
         synthesis_prompt = f"""
@@ -175,6 +179,9 @@ class BrandSynthesisEngine:
         Return ONLY a JSON object with keys: brand_identity, active_focus, suggested_workflows, brand_manifest_json.
         """
         
+        if not self.model:
+            return {"error": "Generative model not configured. Missing API Key."}
+
         try:
             response = self.model.generate_content(synthesis_prompt)
             result = json.loads(response.text.strip('`json\n'))

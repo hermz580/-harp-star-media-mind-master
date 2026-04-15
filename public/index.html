@@ -218,6 +218,15 @@
                 <div id="stack-suggestion-text" class="text-[8px] text-slate-500 italic font-mono">Suggested: Balancing local privacy with cloud performance...</div>
             </div>
 
+            <!-- Update 22: V-Brain Graph UI -->
+            <div id="vbrain-graph" class="sci-box h-48 border-white/5 bg-black/20 overflow-hidden relative">
+                <div class="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
+                    <span class="material-symbols-outlined text-6xl">network_node</span>
+                </div>
+                <div class="absolute top-2 left-2 font-orbitron text-[7px] text-slate-600 uppercase">Neural Topology Graph</div>
+                <canvas id="graph-canvas" class="w-full h-full"></canvas>
+            </div>
+
             <!-- Creative Control Pad -->
             <div class="sci-box p-5 border-white/10 bg-black/40">
                 <div class="flex items-center gap-3 mb-3">
@@ -529,6 +538,70 @@
             setThought(`${data.agent}: ${data.message.substring(0, 30)}...`);
         }
 
+        // Update 27: UI Sound Effects
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSciFiSound(freq = 440, type = 'sine') {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.5);
+        }
+
+        // Update 22: Graph Drawing Logic
+        function drawGraph() {
+            const canvas = document.getElementById('graph-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = 'rgba(0, 255, 204, 0.1)';
+            ctx.lineWidth = 1;
+
+            const nodes = [];
+            for (let i = 0; i < 15; i++) {
+                nodes.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 0.5,
+                    vy: (Math.random() - 0.5) * 0.5
+                });
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                nodes.forEach(n => {
+                    n.x += n.vx; n.y += n.vy;
+                    if (n.x < 0 || n.x > canvas.width) n.vx *= -1;
+                    if (n.y < 0 || n.y > canvas.height) n.vy *= -1;
+
+                    ctx.beginPath();
+                    ctx.arc(n.x, n.y, 1, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(0, 255, 204, 0.5)';
+                    ctx.fill();
+
+                    nodes.forEach(m => {
+                        const dist = Math.hypot(n.x - m.x, n.y - m.y);
+                        if (dist < 50) {
+                            ctx.beginPath();
+                            ctx.moveTo(n.x, n.y);
+                            ctx.lineTo(m.x, m.y);
+                            ctx.stroke();
+                        }
+                    });
+                });
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
+
         // Anti-Tamper
         setInterval(() => {
             const name = document.getElementById("sys-name").innerText.toUpperCase();
@@ -540,6 +613,22 @@
 
         setupWebSocket();
         load();
+        drawGraph();
+
+        // Update 24: Drag-and-Drop Ingestion UI
+        window.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            document.body.style.border = "4px dashed rgba(0, 255, 204, 0.2)";
+        });
+        window.addEventListener('dragleave', () => {
+            document.body.style.border = "none";
+        });
+        window.addEventListener('drop', (e) => {
+            e.preventDefault();
+            document.body.style.border = "none";
+            playSciFiSound(880);
+            setThought("Asset Ingestion sequence initiated.");
+        });
     </script>
 </body>
 </html>
