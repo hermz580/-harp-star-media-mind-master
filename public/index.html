@@ -3,9 +3,9 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>HARP*STAR: SWARM NEXUS</title>
+    <title>HARP*STAR OS v3 // NEURAL_NEXUS</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     <script>
       tailwind.config = {
@@ -16,12 +16,13 @@
               'mono': ['"Roboto Mono"', 'monospace'],
             },
             colors: {
-              'sci-bg': '#05070a',
+              'sci-bg': '#020408',
               'primary': '#6366f1',
               'secondary': '#06b6d4',
               'neon-cyan': '#00ffcc',
               'neon-magenta': '#ff00ff',
               'neon-lime': '#00ff00',
+              'deep-glass': 'rgba(5, 8, 15, 0.8)',
             }
           }
         }
@@ -29,647 +30,375 @@
     </script>
     <style>
         body {
-            background-color: #050510;
+            background-color: #020408;
             color: #e0e0e0;
             background-image: 
-                radial-gradient(circle at 15% 50%, rgba(255, 0, 255, 0.05), transparent 25%), 
-                radial-gradient(circle at 85% 30%, rgba(0, 255, 204, 0.05), transparent 25%),
-                linear-gradient(rgba(0, 255, 204, 0.03) 1px, transparent 1px), 
-                linear-gradient(90deg, rgba(0, 255, 204, 0.03) 1px, transparent 1px);
+                radial-gradient(circle at 15% 50%, rgba(255, 0, 255, 0.03), transparent 35%),
+                radial-gradient(circle at 85% 30%, rgba(0, 255, 204, 0.03), transparent 35%),
+                linear-gradient(rgba(0, 255, 204, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 204, 0.02) 1px, transparent 1px);
             background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
             font-family: 'Roboto Mono', monospace;
         }
 
         .sci-box {
-            background: rgba(13, 20, 31, 0.6);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(0, 255, 204, 0.2);
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0, 255, 204, 0.05);
+            background: rgba(10, 15, 25, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 255, 204, 0.15);
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
             position: relative;
         }
 
-        .sci-box::before {
-            content: ''; position: absolute; top: 0; left: 0; width: 8px; height: 8px;
-            border-top: 2px solid #00ffcc; border-left: 2px solid #00ffcc;
-        }
+        .glow-text-cyan { text-shadow: 0 0 15px rgba(0, 255, 204, 0.4); }
+        .glow-text-magenta { text-shadow: 0 0 15px rgba(255, 0, 255, 0.4); }
 
-        .glow-text-cyan { text-shadow: 0 0 10px rgba(0, 255, 204, 0.5); }
+        .event-node {
+            animation: pulseIn 0.5s ease-out;
+            border-left: 2px solid #00ffcc;
+        }
+        @keyframes pulseIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
         
-        .scanline {
-            width: 100%; height: 100px; z-index: 50; pointer-events: none;
-            background: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(0, 255, 204, 0.02) 50%, rgba(0,0,0,0) 100%);
-            position: absolute; bottom: 100%; animation: scanline 8s linear infinite;
+        .neural-wave {
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            animation: dash 5s linear infinite;
         }
+        @keyframes dash { to { stroke-dashoffset: 0; } }
 
-        @keyframes scanline { 0% { bottom: 100%; } 100% { bottom: -100px; } }
+        #event-stream::-webkit-scrollbar { width: 3px; }
+        #event-stream::-webkit-scrollbar-thumb { background: rgba(0, 255, 204, 0.2); }
 
-        .agent-talk-bubble {
-            animation: slideIn 0.3s ease-out;
-            border-left-width: 3px;
-        }
-        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
-        
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(0, 255, 204, 0.2); border-radius: 2px; }
-
-        #lockdown-screen {
-            display: none; position: fixed; inset: 0; background: black; z-index: 9999;
-            flex-direction: column; align-items: center; justify-content: center;
-            color: #ff0055; text-align: center;
+        .time-travel-bar {
+            background: linear-gradient(90deg, transparent, #00ffcc, transparent);
+            height: 2px;
+            box-shadow: 0 0 10px #00ffcc;
         }
     </style>
 </head>
 <body class="min-h-screen flex flex-col overflow-hidden">
-    <div id="lockdown-screen">
-        <span class="material-symbols-outlined text-8xl animate-pulse">lock_person</span>
-        <h1 class="font-orbitron text-4xl mt-4">BRAND LOCKDOWN</h1>
-        <p class="font-mono mt-2 opacity-50">Integrity Mismatch. Access Revoked.</p>
-    </div>
-
-    <div class="scanline"></div>
-
-    <header class="h-20 border-b border-white/10 bg-black/40 backdrop-blur-md flex items-center justify-between px-8 z-30 shrink-0">
-        <div>
-            <h1 id="sys-name" class="font-orbitron text-xl font-black tracking-tighter text-white glow-text-cyan uppercase">
-                HARP * STAR <span class="text-neon-cyan">MEDIA MIND MASTER</span>
-            </h1>
-            <div class="flex items-center gap-3 mt-1">
-                <span class="text-[9px] text-neon-magenta font-bold tracking-[0.3em]">SWARM NEXUS // FOCUS:</span>
-                <input id="focus-input" type="text" class="bg-transparent border-none p-0 text-[10px] text-white focus:ring-0 w-64 italic" onchange="updateFocus(this.value)">
+    <!-- Header -->
+    <header class="h-24 border-b border-white/5 bg-black/60 backdrop-blur-xl flex items-center justify-between px-10 z-50 shrink-0">
+        <div class="flex items-center gap-6">
+            <div class="size-12 bg-neon-cyan/10 border border-neon-cyan/30 rounded flex items-center justify-center relative">
+                <span class="material-symbols-outlined text-neon-cyan animate-pulse">hive</span>
+                <div class="absolute -inset-1 border border-neon-cyan/10 rounded animate-spin duration-1000"></div>
+            </div>
+            <div>
+                <h1 class="font-orbitron text-2xl font-black tracking-tighter text-white uppercase italic">
+                    HARP * STAR <span class="text-neon-cyan">OS v3</span>
+                </h1>
+                <div class="flex items-center gap-4 mt-1">
+                    <span class="text-[8px] text-neon-magenta font-bold tracking-[0.4em] uppercase">Neural Nexus // System_Connected</span>
+                    <div class="flex items-center gap-2 bg-white/5 px-2 py-0.5 rounded border border-white/5">
+                        <span class="size-1 bg-neon-lime rounded-full animate-pulse"></span>
+                        <span id="latency" class="text-[7px] text-slate-500 font-mono">0ms</span>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="flex items-center gap-3">
-            <button onclick="toggleTheme()" class="p-2 text-slate-400 hover:text-white transition-colors">
-                <span class="material-symbols-outlined text-sm">palette</span>
+        <div class="flex items-center gap-4">
+            <div class="text-right mr-4">
+                <div id="active-workspace" class="text-[9px] text-white font-bold uppercase tracking-widest">Main_Workspace</div>
+                <div id="system-uptime" class="text-[7px] text-slate-500 font-mono">UPTIME: 00:00:00</div>
+            </div>
+            <button onclick="executeSync()" class="bg-neon-cyan/5 border border-neon-cyan/30 text-neon-cyan px-6 py-2 font-orbitron text-[10px] font-black tracking-[0.2em] hover:bg-neon-cyan hover:text-black transition-all">SYNC_DNA</button>
+            <button onclick="toggleTimeTravel()" class="bg-white/5 border border-white/10 text-slate-400 p-2 hover:text-white transition-all">
+                <span class="material-symbols-outlined text-sm">history</span>
             </button>
-            <button onclick="openBrandBible()" class="p-2 text-slate-400 hover:text-neon-magenta transition-colors">
-                <span class="material-symbols-outlined text-sm">auto_stories</span>
-            </button>
-            <button onclick="executeSync()" class="bg-neon-cyan/10 border border-neon-cyan/40 text-neon-cyan px-4 py-1.5 font-orbitron text-[10px] font-bold tracking-widest hover:bg-neon-cyan hover:text-black transition-all">SYNC DNA</button>
-            <button onclick="discoverSystem()" class="bg-amber-500/10 border border-amber-500/40 text-amber-500 px-4 py-1.5 font-orbitron text-[10px] font-bold tracking-widest hover:bg-amber-500 hover:text-black transition-all">SCAN SYSTEM</button>
         </div>
     </header>
 
     <main class="flex-grow flex overflow-hidden">
-        <!-- Sidebar -->
-        <aside class="w-80 border-r border-white/5 p-6 flex flex-col gap-6 bg-black/20 shrink-0 overflow-y-auto">
-            <div class="sci-box p-4 border-white/20">
-                <h3 class="font-orbitron text-[10px] items-center flex gap-2 text-slate-400 font-bold mb-4 uppercase">
-                    <span class="material-symbols-outlined text-sm">settings_suggest</span> System Status
+        <!-- Sidebar: Event Stream (The Nervous System) -->
+        <aside class="w-96 border-r border-white/5 bg-black/30 flex flex-col shrink-0">
+            <div class="p-6 border-b border-white/5 flex justify-between items-center">
+                <h3 class="font-orbitron text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sm text-neon-cyan">sensors</span> Event Stream
                 </h3>
-                <div class="space-y-2 font-mono text-[9px]">
-                    <div class="flex justify-between">
-                        <span class="text-slate-500">PLUGINS ACTIVE:</span>
-                        <span id="plugin-count" class="text-neon-cyan">0</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-slate-500">LAST BACKUP:</span>
-                        <span id="last-backup" class="text-neon-magenta">NEVER</span>
-                    </div>
+                <span id="event-count" class="text-[8px] bg-white/5 text-slate-500 px-2 py-1 rounded font-mono">0</span>
+            </div>
+            <div id="event-stream" class="flex-grow overflow-y-auto p-4 space-y-3 custom-scrollbar">
+                <!-- Live events injected here -->
+            </div>
+            <div class="p-4 bg-black/40 border-t border-white/5">
+                <div class="flex justify-between text-[8px] text-slate-600 mb-2 uppercase font-bold">
+                    <span>Cortex Load</span>
+                    <span id="cortex-load">12%</span>
                 </div>
-            </div>
-
-            <div class="sci-box p-4 border-primary/30">
-                <h3 class="font-orbitron text-[10px] items-center flex gap-2 text-primary font-bold mb-4 uppercase">
-                    <span class="material-symbols-outlined text-sm">database</span> Knowledge Roots
-                </h3>
-                <div id="roots-list" class="space-y-4 max-h-64 overflow-y-auto pr-2"></div>
-            </div>
-
-            <div class="sci-box p-4 border-amber-500/30">
-                <h3 class="font-orbitron text-[10px] items-center flex gap-2 text-amber-500 font-bold mb-4 uppercase">
-                    <span class="material-symbols-outlined text-sm">tune</span> Agent Personality
-                </h3>
-                <div class="space-y-4">
-                    <div class="space-y-1">
-                        <div class="flex justify-between text-[8px] text-slate-500 uppercase">
-                            <span>Precision</span>
-                            <span>Creativity</span>
-                        </div>
-                        <input type="range" onchange="updatePersonality()" class="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-amber-500">
-                    </div>
-                    <div class="space-y-1">
-                        <div class="flex justify-between text-[8px] text-slate-500 uppercase">
-                            <span>Logic</span>
-                            <span>Abstract</span>
-                        </div>
-                        <input type="range" onchange="updatePersonality()" class="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-amber-500">
-                    </div>
+                <div class="w-full h-1 bg-white/5 rounded-full overflow-hidden">
+                    <div id="load-bar" class="h-full bg-neon-magenta w-1/4 transition-all duration-1000"></div>
                 </div>
-            </div>
-
-            <div class="sci-box p-4 border-neon-magenta/30">
-                <h3 class="font-orbitron text-[10px] items-center flex gap-2 text-neon-magenta font-bold mb-4 uppercase">
-                    <span class="material-symbols-outlined text-sm">language</span> Inspiration Roots
-                </h3>
-                <div id="inspiration-list" class="space-y-2"></div>
-                <button onclick="addInspiration()" class="w-full mt-4 border border-white/10 py-1 text-[10px] text-slate-500 hover:text-white transition-colors">ADD ROOT</button>
-            </div>
-
-            <div class="sci-box p-4 border-neon-lime/30 flex-grow">
-                <h3 class="font-orbitron text-[10px] items-center flex gap-2 text-neon-lime font-bold mb-4 uppercase">
-                    <span class="material-symbols-outlined text-sm">hub</span> Platforms
-                </h3>
-                <div id="platforms-list" class="space-y-2"></div>
             </div>
         </aside>
 
-    <!-- Command Palette -->
-    <div id="command-palette" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-start justify-center pt-20">
-        <div class="w-[600px] sci-box border-neon-cyan/50 p-2">
-            <div class="flex items-center gap-3 p-4 border-b border-white/10">
-                <span class="material-symbols-outlined text-neon-cyan">terminal</span>
-                <input id="command-input" type="text" placeholder="TYPE A COMMAND (sync, scan, theme, search...)"
-                    class="bg-transparent border-none focus:ring-0 text-white font-mono text-sm w-full uppercase">
-            </div>
-            <div class="p-4 text-[10px] text-slate-500 font-mono">
-                <div class="flex justify-between mb-2"><span>CTRL+K TO CLOSE</span> <span>ESC TO CANCEL</span></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Update 54: The Living Brand Bible Overlay -->
-    <div id="brand-bible" class="hidden fixed inset-0 bg-sci-bg/95 backdrop-blur-2xl z-[160] p-12 overflow-y-auto">
-        <div class="max-w-5xl mx-auto">
-            <div class="flex justify-between items-end border-b border-neon-cyan/30 pb-6 mb-10">
-                <div>
-                    <h2 class="font-orbitron text-4xl font-black text-white glow-text-cyan tracking-tighter uppercase">THE BRAND BIBLE</h2>
-                    <p class="font-mono text-[10px] text-neon-cyan/60 mt-2 uppercase tracking-widest">Autonomous Living Style Guide // Apex 54</p>
-                </div>
-                <button onclick="document.getElementById('brand-bible').classList.add('hidden')" class="sci-box px-6 py-2 text-[10px] text-slate-400 hover:text-white border-white/10">CLOSE_NEXUS</button>
+        <!-- Center: Topology & Neural Wave -->
+        <div class="flex-grow flex flex-col relative">
+            <!-- Neural Wave Overlay (Top) -->
+            <div class="h-32 absolute top-0 inset-x-0 z-10 pointer-events-none opacity-40">
+                <svg width="100%" height="100%" viewBox="0 0 1000 100">
+                    <path id="neural-path" d="M0 50 Q 250 10, 500 50 T 1000 50" fill="none" stroke="#00ffcc" stroke-width="0.5" class="neural-wave" />
+                </svg>
             </div>
 
-            <div class="grid grid-cols-12 gap-8">
-                <div class="col-span-8 space-y-8">
-                    <div class="sci-box p-8 border-white/5">
-                        <h3 class="font-orbitron text-xs font-bold text-slate-400 mb-6 uppercase tracking-widest border-l-2 border-neon-magenta pl-4">Manifested Identity</h3>
-                        <p id="bible-identity" class="font-mono text-sm text-slate-300 leading-relaxed italic">Synchronizing DNA...</p>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-8">
-                        <div class="sci-box p-6 border-white/5">
-                            <h3 class="font-orbitron text-[10px] font-bold text-slate-500 mb-4 uppercase">Keywords</h3>
-                            <div id="bible-keywords" class="flex flex-wrap gap-2"></div>
-                        </div>
-                        <div class="sci-box p-6 border-white/5">
-                            <h3 class="font-orbitron text-[10px] font-bold text-slate-500 mb-4 uppercase">Core Tone</h3>
-                            <div id="bible-tone" class="text-xl font-orbitron text-white">Vibrant</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-span-4 space-y-8">
-                    <div class="sci-box p-6 border-white/5">
-                        <h3 class="font-orbitron text-[10px] font-bold text-slate-500 mb-6 uppercase tracking-widest">Neural Color Palette</h3>
-                        <div id="bible-colors" class="space-y-4"></div>
-                    </div>
-
-                    <div class="sci-box p-6 border-neon-magenta/20 bg-neon-magenta/5">
-                        <h3 class="font-orbitron text-[10px] font-bold text-neon-magenta mb-2 uppercase">Active Focus</h3>
-                        <p id="bible-focus" class="text-xs text-white font-mono italic font-bold">Awaiting Calibration...</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Main Column -->
-    <div class="flex-grow flex flex-col p-6 gap-6 overflow-hidden">
-            <div class="flex justify-between items-center">
-                <h2 class="font-orbitron text-lg font-bold text-white flex items-center gap-3 italic">
-                    <span class="size-2 rounded-full bg-neon-cyan shadow-[0_0_8px_#00ffcc] animate-pulse"></span>
-                    Intelligence Pipeline
-                </h2>
-                <button onclick="proposeWorkflows()" class="bg-secondary/20 hover:bg-secondary/40 text-secondary text-[10px] font-bold px-6 py-2 border border-secondary/50 rounded uppercase tracking-widest transition-all">PROCESS BUCKET</button>
-            </div>
-
-            <div id="workflow-pipeline" class="flex-grow sci-box p-6 overflow-y-auto space-y-4 custom-scrollbar">
-                <div class="flex items-center justify-center h-full text-slate-600 text-xs italic tracking-widest">AWAITING ASSET INJECTION...</div>
-            </div>
-
-            <!-- Update: Model Stack Selector -->
-            <div id="model-stack-config" class="sci-box p-4 border-cyan-400/30 bg-black/40">
-                <div class="flex items-center justify-between mb-2">
-                    <div class="flex items-center gap-2">
-                        <span class="material-symbols-outlined text-cyan-400 text-sm">account_tree</span>
-                        <span class="font-orbitron text-[9px] font-bold text-slate-400 uppercase">Model Stack Logic</span>
-                    </div>
-                    <select id="model-override" class="bg-black/80 border border-white/10 text-[9px] text-cyan-400 font-mono px-2 py-1 rounded">
-                        <option value="auto">AUTO-STRATEGIST (SUGGESTED)</option>
-                        <option value="gemini">GOOGLE GEMINI (CLOUD)</option>
-                        <option value="lmstudio">LM STUDIO (LOCAL)</option>
-                        <option value="ollama">OLLAMA (LOCAL)</option>
-                    </select>
-                </div>
-                <div id="stack-suggestion-text" class="text-[8px] text-slate-500 italic font-mono">Suggested: Balancing local privacy with cloud performance...</div>
-            </div>
-
-            <!-- Update 22: V-Brain Graph UI -->
-            <div id="vbrain-graph" class="sci-box h-48 border-white/5 bg-black/20 overflow-hidden relative">
-                <div class="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
-                    <span class="material-symbols-outlined text-6xl">network_node</span>
-                </div>
-                <div class="absolute top-2 left-2 font-orbitron text-[7px] text-slate-600 uppercase">Neural Topology Graph</div>
+            <!-- Main Topology Graph -->
+            <div id="vbrain-graph" class="flex-grow relative overflow-hidden bg-black/10">
                 <canvas id="graph-canvas" class="w-full h-full"></canvas>
+                <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div class="size-64 rounded-full border border-neon-cyan/5 animate-ping"></div>
+                </div>
             </div>
 
-            <!-- Creative Control Pad -->
-            <div class="sci-box p-5 border-white/10 bg-black/40">
-                <div class="flex items-center gap-3 mb-3">
-                    <span class="material-symbols-outlined text-neon-cyan animate-pulse">psychology</span>
-                    <span class="font-orbitron text-[10px] font-bold uppercase tracking-widest text-slate-400">Creative Steering</span>
+            <!-- Creative Spark Input -->
+            <div class="h-48 p-8 border-t border-white/5 bg-black/40 flex flex-col gap-4">
+                <div class="flex justify-between items-center">
+                    <span class="font-orbitron text-[10px] text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm text-neon-magenta animate-pulse">bolt</span> Global Creative Spark
+                    </span>
+                    <div class="flex gap-4">
+                        <select id="model-stack" class="bg-transparent border border-white/10 text-[9px] text-neon-cyan font-mono px-4 py-1 rounded outline-none focus:border-neon-cyan/50">
+                            <option value="auto">AUTO_STRATEGIST</option>
+                            <option value="local">LOCAL_SOVEREIGN</option>
+                            <option value="cloud">CLOUD_PERFORMANCE</option>
+                        </select>
+                        <button onclick="igniteSwarm()" class="bg-neon-magenta/10 border border-neon-magenta/40 text-neon-magenta px-8 py-1.5 font-orbitron text-[10px] font-black tracking-widest hover:bg-neon-magenta hover:text-black transition-all">IGNITE_SWARM</button>
+                    </div>
                 </div>
-                <textarea id="creative-steering" placeholder="Optional: Ignite the swarm with a spark or direction..." 
-                    class="w-full h-16 bg-black/60 border border-white/5 rounded p-3 text-[11px] text-slate-300 placeholder:text-slate-700 focus:outline-none focus:border-neon-cyan/50 transition-all resize-none font-mono"></textarea>
+                <textarea id="creative-spark" placeholder="Warp the brand reality... Type a spark to ignite the specialist swarm."
+                    class="flex-grow bg-transparent border-none text-xl font-orbitron text-white placeholder:text-slate-800 outline-none resize-none glow-text-cyan"></textarea>
             </div>
         </div>
 
-        <!-- Right Terminal -->
-        <aside class="w-96 border-l border-white/5 p-6 flex flex-col gap-6 bg-black/20 shrink-0">
-            <div class="sci-box p-6 border-primary/30 text-center">
-                <div class="size-16 mx-auto mb-4 relative">
-                    <div class="absolute inset-0 border-2 border-primary/20 rounded-full animate-spin"></div>
-                    <span class="material-symbols-outlined text-primary text-3xl absolute inset-0 flex items-center justify-center">insights</span>
-                </div>
-                <h3 class="font-orbitron text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3">V-Brain Core</h3>
-                <p id="thought-display" class="text-[10px] text-primary italic font-mono min-h-[40px]">"Synchronizing with brand mission."</p>
+        <!-- Right: Active Workflows & Swarm Nexus -->
+        <aside class="w-96 border-l border-white/5 bg-black/30 flex flex-col shrink-0">
+            <div class="p-6 border-b border-white/5">
+                <h3 class="font-orbitron text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active Manifestations</h3>
+            </div>
+            <div id="workflow-list" class="flex-grow overflow-y-auto p-6 space-y-4">
+                <!-- Workflows injected here -->
             </div>
 
-            <div class="sci-box flex-grow flex flex-col overflow-hidden border-white/10">
-                <div class="px-4 py-2 border-b border-white/10 flex justify-between items-center bg-black/40">
-                    <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Swarm Terminal</span>
-                    <span class="text-[8px] text-neon-lime animate-pulse font-mono">LIVE_FEED</span>
+            <div id="swarm-nexus" class="h-64 border-t border-white/5 p-6 bg-black/40">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="material-symbols-outlined text-primary text-lg">forum</span>
+                    <span class="font-orbitron text-[10px] text-slate-400 uppercase tracking-widest">Swarm Nexus</span>
                 </div>
-                <!-- Update 6: Trend Suggestions in Terminal -->
-                <div id="trend-bar" class="px-4 py-1 bg-neon-magenta/10 border-b border-neon-magenta/20 text-[7px] text-neon-magenta font-bold tracking-widest uppercase flex justify-between">
-                    <span>Active Trends: AI Sovereignty, Seattle Tech, Minimalist Manifestation</span>
-                </div>
-                <div id="agent-terminal" class="flex-grow p-4 overflow-y-auto space-y-4 font-mono text-[10px] bg-black/20"></div>
-                <div class="p-4 border-t border-white/10 flex items-center gap-3 bg-black/40">
-                    <span class="text-neon-cyan text-xs font-bold font-mono">></span>
-                    <input type="text" placeholder="DIRECT COMMAND..." class="flex-grow bg-transparent border-none focus:ring-0 text-[10px] text-white placeholder:text-slate-700 uppercase p-0">
+                <div id="swarm-chat" class="h-40 overflow-y-auto space-y-3 font-mono text-[9px]">
+                    <!-- Swarm talk injected here -->
                 </div>
             </div>
         </aside>
     </main>
 
-    <!-- Update 47: Brand Template Hub Overlay -->
-    <div id="template-hub" class="hidden fixed inset-0 bg-black/90 backdrop-blur-xl z-[150] p-10">
-        <div class="max-w-4xl mx-auto">
-            <div class="flex justify-between items-center mb-10">
-                <h2 class="font-orbitron text-2xl font-bold text-white tracking-widest">BRAND TEMPLATE HUB</h2>
-                <button onclick="document.getElementById('template-hub').classList.add('hidden')" class="text-slate-500 hover:text-white">CLOSE</button>
+    <!-- Footer -->
+    <footer class="h-10 border-t border-white/5 bg-black/80 flex items-center justify-between px-10 z-50 shrink-0">
+        <div class="flex items-center gap-10">
+            <div class="flex items-center gap-4">
+                <span class="text-[8px] text-slate-600 font-bold uppercase">System Resources</span>
+                <div id="res-cpu" class="text-[8px] text-neon-cyan font-mono">CPU: 0%</div>
+                <div id="res-ram" class="text-[8px] text-neon-magenta font-mono">RAM: 0%</div>
             </div>
-            <div class="grid grid-cols-3 gap-6">
-                <div class="sci-box p-6 border-neon-cyan/30 hover:border-neon-cyan transition-all cursor-pointer">
-                    <h4 class="font-orbitron text-xs font-bold text-neon-cyan mb-2">PIONEER CORE</h4>
-                    <p class="text-[9px] text-slate-500 italic">"Focus on rugged exploration and community grit."</p>
-                </div>
-                <div class="sci-box p-6 border-neon-magenta/30 hover:border-neon-magenta transition-all cursor-pointer">
-                    <h4 class="font-orbitron text-xs font-bold text-neon-magenta mb-2">NEON SOVEREIGN</h4>
-                    <p class="text-[9px] text-slate-500 italic">"High-gloss tech with an emphasis on data protection."</p>
-                </div>
-                <div class="sci-box p-6 border-white/10 hover:border-white transition-all cursor-pointer opacity-50">
-                    <h4 class="font-orbitron text-xs font-bold text-white mb-2">VOID MINIMAL</h4>
-                    <p class="text-[9px] text-slate-500 italic">"Silent, precise, and extremely focused."</p>
-                </div>
-            </div>
+            <div id="vbrain-state" class="text-[8px] text-slate-500 font-mono italic">"Awaiting instruction sequence..."</div>
         </div>
-    </div>
-
-    <footer class="h-8 bg-black/80 border-t border-white/10 flex items-center justify-between px-8 z-30 shrink-0">
-        <div class="flex items-center gap-6">
-            <span class="text-[8px] text-slate-600 font-bold uppercase tracking-widest">Neural Learning Curve</span>
-            <div class="w-48 h-1 bg-white/5 rounded-full overflow-hidden">
-                <div id="learning-bar" class="h-full bg-neon-cyan w-0 transition-all duration-1000 shadow-[0_0_10px_#00ffcc]"></div>
-            </div>
-            <span id="root-count-display" class="text-[8px] text-slate-500 font-mono">0 ROOTS CONNECTED</span>
-        </div>
-        <div id="active-stats" class="text-[8px] text-slate-700 font-mono uppercase tracking-[0.3em]">Harp*Star Media Mind Master // v2.6 // OS_CONNECTED</div>
+        <div class="text-[8px] text-slate-700 font-mono uppercase tracking-[0.5em]">Harp*Star Media Mind Master // OS v3.0.0-Genesis</div>
     </footer>
 
-    <!-- Drop Zone Integration -->
-    <div id="drop-zone" class="hidden"></div> <!-- Replaced functionality with simple file trigger if needed -->
-    <input type="file" id="file-input" class="hidden" multiple />
+    <!-- Time Travel UI -->
+    <div id="time-travel-overlay" class="hidden fixed bottom-10 inset-x-20 h-24 sci-box border-neon-cyan/50 z-[100] p-6">
+        <div class="flex justify-between items-center mb-4">
+            <span class="font-orbitron text-[10px] text-neon-cyan uppercase">Temporal State Debugger</span>
+            <span id="time-travel-timestamp" class="font-mono text-[10px] text-slate-500">REALTIME</span>
+        </div>
+        <input type="range" min="0" max="100" value="100" id="time-slider" class="w-full h-1 bg-white/5 rounded-lg appearance-none cursor-pointer accent-neon-cyan">
+        <div class="time-travel-bar mt-2"></div>
+    </div>
 
     <script>
+        const state = {
+            events: [],
+            workflows: [],
+            isTimeTraveling: false,
+            latencyStart: 0
+        };
+
         const req = async (p, o = {}) => {
             try { return (await fetch(p, o)).json(); }
             catch(e) { console.error("API Error", e); return { status: 'error' }; }
         };
 
-        async function load() {
-            const s = await req("/api/status");
-            if (s.status === 'error') return;
-
-            // Render Sentiment (Update 5)
-            const sentiment = s.vbrain.sentiment_history || [];
-            if (sentiment.length > 0) {
-                const last = sentiment[sentiment.length - 1];
-                setThought(`Tone: ${last.score >= 0 ? 'Empowered' : 'Cautious'} (${last.score})`);
-            }
+        // WebSockets: The Pulse of OS v3
+        function setupWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const socket = new WebSocket(`${protocol}//${window.location.host}/ws`);
             
-            document.getElementById("focus-input").value = s.global_focus || "BRAND SOVEREIGNTY";
-
-            const rootsList = document.getElementById("roots-list");
-            rootsList.innerHTML = (s.roots || []).map((r, i) => `
-                <div class="p-3 bg-white/5 border border-white/5 rounded hover:border-primary/50 transition-all">
-                    <div class="flex items-center justify-between mb-1">
-                        <span class="text-[10px] font-bold text-white truncate w-4/5 uppercase">${r.split('/').pop() || r}</span>
-                        <span class="size-1.5 rounded-full ${i == 0 ? 'bg-neon-cyan shadow-[0_0_5px_#00ffcc]' : 'bg-slate-700'}"></span>
-                    </div>
-                </div>
-            `).join("");
-
-            document.getElementById("platforms-list").innerHTML = Object.entries(s.platforms || {}).map(([k, v]) => `
-                <div class="flex items-center justify-between p-2 rounded bg-white/[0.02] border border-transparent hover:border-neon-lime/20 transition-all">
-                    <span class="text-[10px] text-slate-300 capitalize font-mono tracking-tighter">${k}</span>
-                    <span class="text-[8px] font-bold ${v.status == 'connected' ? 'text-neon-lime' : 'text-slate-700'}">${v.status.toUpperCase()}</span>
-                </div>
-            `).join("");
-
-            const p = Math.min((s.roots || []).length * 25, 100);
-            document.getElementById("learning-bar").style.width = p + "%";
-            document.getElementById("root-count-display").innerText = `${(s.roots || []).length} ROOTS SYNCED`;
-
-            // System Status Updates
-            document.getElementById("plugin-count").innerText = Object.keys(s.vbrain.plugins || s.vbrain.agent_integrations || {}).length;
-            if (s.vbrain.last_backup) {
-                document.getElementById("last-backup").innerText = new Date(s.vbrain.last_backup * 1000).toLocaleTimeString();
-            }
-
-            loadWorkflows();
-        }
-
-        async function updateFocus(v) {
-            await req("/api/focus/update", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ focus: v }) });
-            setThought(`Strategic Focus recalibrated: ${v}`);
-        }
-
-        function updatePersonality() {
-            setThought("Recalibrating Agent Personality Matrix...");
-        }
-
-        async function addInspiration() {
-            const url = prompt("Enter Brand URL:");
-            if (!url) return;
-            const data = await req('/api/inspiration/add', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ url })
-            });
-            renderInspiration(data.inspiration_urls);
-        }
-
-        function renderInspiration(urls) {
-            const list = document.getElementById("inspiration-list");
-            list.innerHTML = (urls || []).map(url => `
-                <div class="flex items-center gap-2 p-2 bg-white/5 rounded border border-white/5">
-                    <span class="text-[9px] text-slate-400 truncate flex-1 font-mono">${new URL(url).hostname}</span>
-                </div>
-            `).join('') || '<div class="text-[8px] text-slate-700 italic">No roots found.</div>';
-        }
-
-        async function proposeWorkflows() {
-            setThought("Swarm analyzing media DNA...");
-            const user_spark = document.getElementById("creative-steering").value;
-
-            // Collect personality sliders
-            const sliders = document.querySelectorAll('input[type="range"]');
-            const personality = {
-                creativity: sliders[0].value / 100,
-                logic: sliders[1].value / 100
+            socket.onopen = () => {
+                console.log("OS v3 Neural Link Established.");
+                state.latencyStart = Date.now();
+                socket.send("ping");
             };
 
-            const model_override = document.getElementById('model-override').value;
+            socket.onmessage = (event) => {
+                const data = JSON.parse(event.data);
 
-            await req("/api/workflow/propose", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ user_spark, personality, model_override })
-            });
-            load();
+                if (data.type === 'init_state') {
+                    state.events = data.state.history_summary || [];
+                    renderEvents();
+                }
+
+                if (data.type === 'event_pulse') {
+                    handleEventPulse(data);
+                }
+
+                // Latency Check
+                document.getElementById('latency').innerText = `${Date.now() - state.latencyStart}ms`;
+                state.latencyStart = Date.now();
+            };
+
+            socket.onclose = () => {
+                console.warn("Neural Link Severed. Retrying...");
+                setTimeout(setupWebSocket, 5000);
+            };
+        }
+
+        function handleEventPulse(pulse) {
+            state.events.unshift(pulse);
+            if (state.events.length > 50) state.events.pop();
+            renderEvents();
+
+            // Update UI based on event type
+            if (pulse.event === 'swarm_talk') renderSwarmTalk(pulse.data);
+            if (pulse.event === 'workflow_updated' || pulse.event === 'bucket_processed') loadWorkflows();
+            if (pulse.event === 'focus_changed') document.getElementById('vbrain-state').innerText = `"${pulse.data.new_focus}"`;
+
+            // Notification "Ping"
+            if (pulse.event.includes('completed')) playSciFiSound(880, 'sine', 0.1);
+        }
+
+        function renderEvents() {
+            const container = document.getElementById('event-stream');
+            container.innerHTML = state.events.map(e => `
+                <div class="event-node p-3 bg-white/5 rounded border border-white/5 relative overflow-hidden group">
+                    <div class="flex justify-between items-start mb-1">
+                        <span class="text-[9px] font-black text-neon-cyan uppercase tracking-tighter">${e.event || e.type}</span>
+                        <span class="text-[7px] text-slate-700 font-mono">${new Date(e.timestamp).toLocaleTimeString([], {hour12: false, hour: '2-digit', minute:'2-digit', second:'2-digit'})}</span>
+                    </div>
+                    <div class="text-[8px] text-slate-500 font-mono truncate">${JSON.stringify(e.data).substring(0, 50)}</div>
+                    <div class="absolute inset-0 bg-neon-cyan/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+                </div>
+            `).join('');
+            document.getElementById('event-count').innerText = state.events.length;
+        }
+
+        function renderSwarmTalk(data) {
+            const container = document.getElementById('swarm-chat');
+            const html = `
+                <div class="p-2 border-l border-white/10 bg-white/[0.02]">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="text-neon-cyan font-bold uppercase tracking-tighter" style="color: var(--${data.color})">${data.agent}</span>
+                    </div>
+                    <div class="text-slate-400 italic">"${data.message}"</div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', html);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        async function load() {
+            const s = await req("/api/status");
+            document.getElementById('res-cpu').innerText = `CPU: ${s.resources.cpu}`;
+            document.getElementById('res-ram').innerText = `RAM: ${s.resources.ram}`;
+            document.getElementById('load-bar').style.width = s.resources.cpu;
+            document.getElementById('cortex-load').innerText = s.resources.cpu;
+            loadWorkflows();
         }
 
         async function loadWorkflows() {
             const res = await req("/api/workflow/pending");
-            const container = document.getElementById("workflow-pipeline");
+            const container = document.getElementById("workflow-list");
             if (!res.workflows || res.workflows.length === 0) {
-                container.innerHTML = `<div class="flex flex-col items-center justify-center h-full text-slate-500/30 font-orbitron text-xs animate-pulse">Awaiting Asset Manifestation...</div>`;
+                container.innerHTML = `<div class="text-center text-slate-700 text-[10px] mt-20 italic">AWAITING ASSET_DECOMPOSITION...</div>`;
                 return;
             }
 
             container.innerHTML = res.workflows.map(wf => `
-                <div class="sci-box p-5 border-l-4 ${wf.status == 'completed' ? 'border-l-neon-lime' : 'border-l-secondary'} relative overflow-hidden group">
-                    ${wf.free ? '<div class="absolute -right-8 top-1 bg-neon-lime/80 text-[7px] font-bold px-10 py-1 rotate-45 text-black">NO KEY</div>' : ''}
+                <div class="sci-box p-4 border-l-2 ${wf.status == 'completed' ? 'border-l-neon-lime' : 'border-l-secondary'}">
                     <div class="flex justify-between items-start">
-                        <div class="flex-1">
-                            <h4 class="text-white font-bold text-sm tracking-tight mb-1 uppercase font-orbitron">${wf.plan.title}</h4>
-
-                            <!-- Update 23: Integrated Media Player -->
-                            ${['png','jpg','jpeg','webp'].includes(wf.asset.split('.').pop().toLowerCase())
-                                ? `<div class="w-full h-32 bg-black/40 rounded border border-white/5 mb-3 overflow-hidden flex items-center justify-center">
-                                     <img src="/bucket/${wf.asset}" class="h-full object-contain opacity-60 group-hover:opacity-100 transition-opacity">
-                                   </div>`
-                                : ''}
-
-                            <p class="text-slate-400 text-[10px] italic mb-3">"${wf.plan.story}"</p>
-
-                            <!-- Update 30: Workflow Progress Bars -->
-                            <div class="w-full h-1 bg-white/5 rounded-full mb-4 overflow-hidden">
-                                <div class="h-full bg-secondary transition-all duration-700 shadow-[0_0_5px_#06b6d4]"
-                                     style="width: ${wf.status == 'completed' ? '100' : (wf.status == 'executing' ? '65' : '15')}%"></div>
-                            </div>
-
-                            <div class="flex flex-wrap gap-2">
-                                ${wf.plan.tasks.map(t => `<span class="bg-white/5 text-slate-500 text-[8px] px-2 py-0.5 rounded border border-white/5 font-mono">${t[0]}: ${t[1]}</span>`).join("")}
+                        <div>
+                            <h4 class="text-white font-bold text-[10px] uppercase font-orbitron mb-1">${wf.plan.title}</h4>
+                            <p class="text-[8px] text-slate-500 italic mb-2">${wf.plan.story}</p>
+                            <div class="w-32 h-0.5 bg-white/5 rounded-full overflow-hidden">
+                                <div class="h-full bg-secondary" style="width: ${wf.status == 'completed' ? '100' : (wf.status == 'executing' ? '50' : '5')}%"></div>
                             </div>
                         </div>
-                        <button onclick="ignite('${wf.id}')" class="bg-neon-cyan/10 hover:bg-neon-cyan text-neon-cyan hover:text-black text-[9px] font-black px-5 py-2 border border-neon-cyan/40 transition-all uppercase font-orbitron">
-                            ${wf.status == 'executing' ? 'EXECUTING...' : 'IGNITE'}
+                        <button onclick="ignite('${wf.id}')" class="text-[8px] font-bold text-neon-cyan hover:text-white transition-colors uppercase font-orbitron">
+                            ${wf.status == 'executing' ? 'ACTIVE' : 'IGNITE'}
                         </button>
                     </div>
                 </div>
             `).join("");
         }
 
+        async function igniteSwarm() {
+            const user_spark = document.getElementById('creative-spark').value;
+            const model_override = document.getElementById('model-stack').value;
+            await req("/api/workflow/propose", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ user_spark, model_override })
+            });
+            document.getElementById('creative-spark').value = '';
+        }
+
         async function ignite(id) {
-            setThought("Launching Agentic Manifestation...");
             await req(`/api/workflow/execute/${id}`, { method: "POST" });
-            load();
         }
-
-        function setThought(t) {
-            const d = document.getElementById("thought-display");
-            d.style.opacity = "0";
-            setTimeout(() => { d.innerText = `"${t}"`; d.style.opacity = "1"; }, 200);
-        }
-
-        let isPlasma = false;
-        function toggleTheme() {
-            isPlasma = !isPlasma;
-            document.body.style.setProperty('--neon-cyan', isPlasma ? '#ff00ff' : '#00ffcc');
-            document.body.style.setProperty('--primary', isPlasma ? '#ec4899' : '#6366f1');
-            setThought(isPlasma ? "Theme: PLASMA ACTIVE" : "Theme: OBSIDIAN ACTIVE");
-        }
-
-        // Command Palette Logic
-        document.addEventListener('keydown', (e) => {
-            if (e.ctrlKey && e.key === 'k') {
-                e.preventDefault();
-                document.getElementById('command-palette').classList.toggle('hidden');
-                document.getElementById('command-input').focus();
-            }
-            if (e.key === 'Escape') {
-                document.getElementById('command-palette').classList.add('hidden');
-            }
-        });
-
-        document.getElementById('command-input').addEventListener('keydown', async (e) => {
-            if (e.key === 'Enter') {
-                const cmd = e.target.value.toLowerCase();
-                if (cmd === 'sync') executeSync();
-                if (cmd === 'scan') discoverSystem();
-                if (cmd === 'theme') toggleTheme();
-                if (cmd === 'templates') document.getElementById('template-hub').classList.remove('hidden');
-                if (cmd.startsWith('search ')) {
-                    const q = cmd.replace('search ', '');
-                    const res = await req(`/api/search?q=${q}`);
-                    setThought(`Found ${res.results?.length || 0} matches for "${q}"`);
-                }
-                e.target.value = '';
-                document.getElementById('command-palette').classList.add('hidden');
-            }
-        });
 
         async function executeSync() {
             await req("/api/sync", { method: "POST" });
-            load();
         }
 
-        async function discoverSystem() {
-             const res = await req("/api/system/discover");
-             if (res.potential?.length > 0) {
-                 setThought(`${res.potential.length} new roots detected in system scan.`);
-             }
+        function toggleTimeTravel() {
+            state.isTimeTraveling = !state.isTimeTraveling;
+            document.getElementById('time-travel-overlay').classList.toggle('hidden');
         }
 
-        // WebSockets
-        function setupWebSocket() {
-            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            const socket = new WebSocket(`${protocol}//${window.location.host}/ws`);
-            socket.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                if (data.type === 'swarm_talk') renderAgentSpeech(data);
-            };
-            socket.onclose = () => setTimeout(setupWebSocket, 5000);
-        }
-
-        function renderAgentSpeech(data) {
-            if (data.agent === 'Modeler') {
-                document.getElementById('stack-suggestion-text').innerText = data.message;
-            }
-            const container = document.getElementById("agent-terminal");
-            const html = `
-                <div class="agent-talk-bubble border-l-2 border-${data.color} pl-3 py-1 bg-white/5 rounded-r">
-                    <div class="flex items-center gap-2 mb-1">
-                        <span class="text-${data.color} font-bold text-[8px] uppercase tracking-tighter">${data.agent}</span>
-                        <span class="text-[7px] text-slate-700 ml-auto font-mono">${new Date().toLocaleTimeString()}</span>
-                    </div>
-                    <div class="text-[10px] text-slate-300 italic font-mono leading-relaxed">"${data.message}"</div>
-                </div>
-            `;
-            container.insertAdjacentHTML('beforeend', html);
-            container.scrollTop = container.scrollHeight;
-            setThought(`${data.agent}: ${data.message.substring(0, 30)}...`);
-        }
-
-        // Update 27: UI Sound Effects
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function playSciFiSound(freq = 440, type = 'sine') {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = type;
-            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.5);
-        }
-
-        // Update 54: Brand Bible Logic
-        async function openBrandBible() {
-            const bible = await req("/api/brand/bible");
-            document.getElementById('bible-identity').innerText = typeof bible.identity === 'string' ? bible.identity : JSON.stringify(bible.identity, null, 2);
-            document.getElementById('bible-focus').innerText = bible.active_focus;
-            document.getElementById('bible-tone').innerText = bible.tone;
-
-            document.getElementById('bible-keywords').innerHTML = bible.keywords.map(k => `
-                <span class="bg-neon-cyan/10 text-neon-cyan border border-neon-cyan/20 px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest">${k}</span>
-            `).join('');
-
-            document.getElementById('bible-colors').innerHTML = bible.color_palette.map(c => `
-                <div class="flex items-center gap-4">
-                    <div class="size-10 rounded shadow-lg border border-white/10" style="background-color: ${c}"></div>
-                    <span class="font-mono text-[10px] text-slate-500 uppercase">${c}</span>
-                </div>
-            `).join('');
-
-            document.getElementById('brand-bible').classList.remove('hidden');
-            playSciFiSound(660);
-        }
-
-        // Update 59: Enhanced Neural Topology Physics (Apex)
+        // Neural Topology (Refined v3 Physics)
         function drawGraph() {
             const canvas = document.getElementById('graph-canvas');
-            if (!canvas) return;
             const ctx = canvas.getContext('2d');
             canvas.width = canvas.offsetWidth;
             canvas.height = canvas.offsetHeight;
 
             const nodes = [];
-            for (let i = 0; i < 25; i++) {
+            for (let i = 0; i < 30; i++) {
                 nodes.push({
                     x: Math.random() * canvas.width,
                     y: Math.random() * canvas.height,
-                    vx: (Math.random() - 0.5) * 0.8,
-                    vy: (Math.random() - 0.5) * 0.8,
-                    size: Math.random() * 2 + 1,
-                    type: i % 5 === 0 ? 'magenta' : 'cyan'
+                    vx: (Math.random() - 0.5) * 0.4,
+                    vy: (Math.random() - 0.5) * 0.4,
+                    size: Math.random() * 1.5 + 0.5
                 });
             }
 
             function animate() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 nodes.forEach(n => {
-                    // Slight attraction to center
-                    n.vx += (canvas.width/2 - n.x) * 0.00001;
-                    n.vy += (canvas.height/2 - n.y) * 0.00001;
-
                     n.x += n.vx; n.y += n.vy;
-                    if (n.x < 0 || n.x > canvas.width) n.vx *= -1.1;
-                    if (n.y < 0 || n.y > canvas.height) n.vy *= -1.1;
-
-                    // Friction
-                    n.vx *= 0.999; n.vy *= 0.999;
+                    if (n.x < 0 || n.x > canvas.width) n.vx *= -1;
+                    if (n.y < 0 || n.y > canvas.height) n.vy *= -1;
 
                     ctx.beginPath();
                     ctx.arc(n.x, n.y, n.size, 0, Math.PI * 2);
-                    ctx.fillStyle = n.type === 'magenta' ? 'rgba(255, 0, 255, 0.4)' : 'rgba(0, 255, 204, 0.4)';
+                    ctx.fillStyle = 'rgba(0, 255, 204, 0.2)';
                     ctx.fill();
 
                     nodes.forEach(m => {
                         const dist = Math.hypot(n.x - m.x, n.y - m.y);
-                        if (dist < 80) {
+                        if (dist < 100) {
                             ctx.beginPath();
                             ctx.moveTo(n.x, n.y);
                             ctx.lineTo(m.x, m.y);
-                            ctx.strokeStyle = `rgba(0, 255, 204, ${0.15 * (1 - dist/80)})`;
-                            ctx.lineWidth = 0.5;
+                            ctx.strokeStyle = `rgba(0, 255, 204, ${0.1 * (1 - dist/100)})`;
                             ctx.stroke();
                         }
                     });
@@ -679,33 +408,34 @@
             animate();
         }
 
-        // Anti-Tamper
+        function playSciFiSound(freq, type = 'sine', vol = 0.05) {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.5);
+        }
+
+        // Initialize Uptime
+        let uptimeSecs = 0;
         setInterval(() => {
-            const name = document.getElementById("sys-name").innerText.toUpperCase();
-            if (!name.includes("HARP * STAR") || !name.includes("MEDIA MIND MASTER")) {
-                document.getElementById("lockdown-screen").style.display = "flex";
-                window.stop();
-            }
+            uptimeSecs++;
+            const h = Math.floor(uptimeSecs / 3600).toString().padStart(2, '0');
+            const m = Math.floor((uptimeSecs % 3600) / 60).toString().padStart(2, '0');
+            const s = (uptimeSecs % 60).toString().padStart(2, '0');
+            document.getElementById('system-uptime').innerText = `UPTIME: ${h}:${m}:${s}`;
         }, 1000);
 
         setupWebSocket();
         load();
         drawGraph();
-
-        // Update 24: Drag-and-Drop Ingestion UI
-        window.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            document.body.style.border = "4px dashed rgba(0, 255, 204, 0.2)";
-        });
-        window.addEventListener('dragleave', () => {
-            document.body.style.border = "none";
-        });
-        window.addEventListener('drop', (e) => {
-            e.preventDefault();
-            document.body.style.border = "none";
-            playSciFiSound(880);
-            setThought("Asset Ingestion sequence initiated.");
-        });
+        setInterval(load, 10000); // Periodic status sync
     </script>
 </body>
 </html>

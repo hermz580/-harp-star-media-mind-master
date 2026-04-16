@@ -8,10 +8,12 @@ import time
 import uvicorn
 import shutil
 import psutil
+import asyncio
 from typing import List, Dict, Any
 from brand_brain.orchestrator import MasterOrchestrator
+from brand_brain.core.events import bus, Event
 
-app = FastAPI(title="Harp * Star Media Mind Master")
+app = FastAPI(title="Harp * Star Media Mind Master OS v3")
 
 # WebSocket Connection Manager
 class ConnectionManager:
@@ -34,6 +36,19 @@ class ConnectionManager:
 
 ws_manager = ConnectionManager()
 
+# Global Event Listener for WebSocket Broadcasting
+async def broadcast_events(event: Event):
+    await ws_manager.broadcast({
+        "type": "event_pulse",
+        "event": event.type,
+        "data": event.data,
+        "source": event.source,
+        "timestamp": event.timestamp
+    })
+
+# Enable wildcard subscription
+bus.subscribe("*", broadcast_events)
+
 # Enable CORS
 app.add_middleware(
     CORSMiddleware,
@@ -50,14 +65,18 @@ orch = MasterOrchestrator(str(ROOT_DIR))
 async def websocket_endpoint(websocket: WebSocket):
     await ws_manager.connect(websocket)
     try:
+        # Send initial state
+        await websocket.send_json({
+            "type": "init_state",
+            "state": bus.get_state()
+        })
         while True:
-            await websocket.receive_text() # Keep alive
+            await websocket.receive_text()
     except WebSocketDisconnect:
         ws_manager.disconnect(websocket)
 
 @app.get("/api/status")
 async def get_status():
-    # [Update 53: Resource Guard]
     cpu_usage = psutil.cpu_percent()
     ram = psutil.virtual_memory()
 
@@ -72,7 +91,8 @@ async def get_status():
             "cpu": f"{cpu_usage}%",
             "ram": f"{ram.percent}%",
             "status": "Optimal" if cpu_usage < 80 else "High Load"
-        }
+        },
+        "live_state": bus.get_state()
     }
 
 @app.post("/api/focus/update")
@@ -80,33 +100,8 @@ async def update_focus(focus_data: dict = Body(...)):
     focus = focus_data.get("focus")
     if not focus:
         raise HTTPException(status_code=400, detail="Focus text required")
-    new_focus = orch.set_focus(focus)
+    new_focus = await orch.set_focus(focus)
     return {"status": "success", "focus": new_focus}
-
-@app.get("/api/system/discover")
-async def discover_roots():
-    roots = orch.discover_system_roots()
-    return {"status": "success", "suggested": roots}
-
-@app.post("/api/inspiration/add")
-async def add_inspiration(url: str = Body(..., embed=True)):
-    urls = orch.add_inspiration_url(url)
-    return {"status": "success", "inspiration_urls": urls}
-
-@app.post("/api/platforms/add")
-async def add_platform(name: str = Body(..., embed=True), config: dict = Body(..., embed=True)):
-    orch.platforms.add_custom_platform(name, config)
-    return {"status": "success"}
-
-@app.post("/api/bucket/upload")
-async def upload_to_bucket(files: List[UploadFile] = File(...)):
-    uploaded = []
-    for file in files:
-        file_path = orch.bucket_path / file.filename
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-        uploaded.append(file.filename)
-    return {"status": "success", "uploaded": uploaded}
 
 @app.post("/api/workflow/propose")
 async def propose_workflows(background_tasks: BackgroundTasks, body: dict = Body(...)):
@@ -114,82 +109,34 @@ async def propose_workflows(background_tasks: BackgroundTasks, body: dict = Body
     personality = body.get("personality", {"creativity": 0.7, "logic": 0.5})
     model_override = body.get("model_override", "auto")
 
-    # [Update 10: Agent Personality Tuning]
-    # In practice, creativity slider maps to temperature
-    temp = float(personality.get("creativity", 0.7))
     orch.vbrain["current_personality"] = personality
     orch.vbrain["model_override"] = model_override
 
-    workflows = orch.process_bucket(user_spark=user_spark)
+    workflows = await orch.process_bucket(user_spark=user_spark)
     if workflows:
-        # Trigger real-time swarm debate in the background
         asset_name = workflows[0]['asset']
         focus = orch.global_focus
-
-        # Determine effective model stack
-        effective_stack = model_override
-        if effective_stack == "auto":
-            is_local = any(kw in focus.lower() for kw in ['privacy', 'sovereignty', 'secure', 'local'])
-            effective_stack = "lmstudio" if is_local else "gemini"
-
-        # Pass parameters to swarm
-        params = {
-            "temperature": temp,
-            "model_stack": effective_stack
-        }
-        background_tasks.add_task(orch.swarm.collaborate, asset_name, focus, ws_manager, user_spark, params)
+        background_tasks.add_task(orch.swarm.collaborate, asset_name, focus, user_spark)
     return {"status": "success", "workflows": workflows}
 
 @app.get("/api/workflow/pending")
 async def get_pending_workflows():
     return {"workflows": list(orch.active_workflows.values())}
 
-@app.get("/api/search")
-async def global_search(q: str):
-    """Update 29: Global Search implementation"""
-    results = []
-    q = q.lower()
-
-    # Search DNA
-    for root, manifest in orch.vbrain.get("context_map", {}).items():
-        if q in root.lower():
-            results.append({"type": "root", "title": root, "snippet": "Filesystem Root"})
-
-        for asset in manifest.get("assets", []):
-            if q in asset['path'].lower():
-                results.append({"type": "asset", "title": asset['path'], "snippet": f"Found in {root}"})
-
-    # Search Workflows
-    for wf in orch.active_workflows.values():
-        if q in wf['plan']['title'].lower() or q in wf['plan']['story'].lower():
-            results.append({"type": "workflow", "title": wf['plan']['title'], "snippet": wf['plan']['story']})
-
-    return {"results": results[:10]}
-
 @app.post("/api/workflow/execute/{workflow_id}")
 async def execute_workflow(workflow_id: str):
-    result = orch.execute_workflow(workflow_id)
+    result = await orch.execute_workflow(workflow_id)
     if result.get("status") == "error":
         raise HTTPException(status_code=404, detail=result["message"])
     return result
 
-@app.post("/api/roots/add")
-async def add_root(path_data: dict = Body(...)):
-    path = path_data.get("path")
-    if not path:
-        raise HTTPException(status_code=400, detail="Path is required")
-    orch.add_discovery_path(path)
-    return {"status": "success", "roots": orch.discovery_paths}
-
 @app.post("/api/sync")
 async def execute_sync():
-    orch.learn()
-    orch.sync_dna()
+    await orch.sync_dna()
     return {"status": "success"}
 
 @app.get("/api/brand/bible")
 async def get_brand_bible():
-    """Update 54: The Living Brand Bible"""
     vbrain = orch.vbrain
     profile_path = orch.project_root / "brand_brain" / "brand_profile.json"
     profile = {}
@@ -197,11 +144,10 @@ async def get_brand_bible():
         with open(profile_path, 'r') as f:
             profile = json.load(f)
 
-    # Synthesize style guide
     bible = {
         "identity": profile.get("brand_identity", vbrain.get("identity_summary", "Awaiting manifestation...")),
         "active_focus": orch.global_focus,
-        "keywords": ["Empowerment", "Innovation", "Sovereignty"], # Mocked from profile
+        "keywords": ["Empowerment", "Innovation", "Sovereignty"],
         "color_palette": ["#00F2FF", "#FF00E5", "#0A0A0F"],
         "tone": "Vibrant / Authoritative",
         "last_updated": vbrain.get("last_learning_session", time.time())
@@ -210,7 +156,7 @@ async def get_brand_bible():
 
 @app.post("/api/workspace/switch")
 async def switch_workspace(name: str = Body(..., embed=True)):
-    res = orch.switch_workspace(name)
+    res = await orch.switch_workspace(name)
     return res
 
 app.mount("/bucket", StaticFiles(directory=str(orch.bucket_path)), name="bucket")
