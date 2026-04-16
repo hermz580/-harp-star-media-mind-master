@@ -8,6 +8,10 @@ google-generativeai
 python-dotenv
 pandas
 requests
+cryptography
+faiss-cpu
+sentence-transformers
+psutil
 jinja2
 python-multipart
 aiofiles

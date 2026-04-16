@@ -1,5 +1,6 @@
 import os
 import json
+import asyncio
 import logging
 from pathlib import Path
 from brand_brain.orchestrator import MasterOrchestrator
@@ -8,7 +9,7 @@ from brand_brain.orchestrator import MasterOrchestrator
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("SYSTEM_CHECK")
 
-def test_logic():
+async def test_logic():
     print("\n--- Harp * Star Media Mind Master: Logic Health Check ---")
     
     # 1. Initialize Orchestrator
@@ -24,11 +25,11 @@ def test_logic():
         print(f"[Data] V-Brain found at {orch.vbrain_path}")
     else:
         print("[Data] V-Brain not found (this is normal for first-run). Initializing...")
-        orch.save_vbrain()
+        await orch.save_vbrain()
 
     # 3. Test Global Focus
     test_focus = "Community Empowerment in Seattle"
-    orch.set_focus(test_focus)
+    await orch.set_focus(test_focus)
     if orch.global_focus == test_focus:
         print(f"[Logic] Global Focus logic working: '{orch.global_focus}'")
     else:
@@ -51,12 +52,12 @@ def test_logic():
     # 6. Verify Security Strings (Cross-check with UI)
     with open("public/index.html", "r") as f:
         html = f.read()
-        if "HARP * STAR MEDIA MIND MASTER" in html and "lockdown-screen" in html:
-            print("[Security] Harp*Star Lockdown Protocol identified in UI.")
+        if "HARP * STAR" in html and "OS v3" in html:
+            print("[Security] Harp*Star OS v3 Protocol identified in UI.")
         else:
             print("[Security] Security strings missing from UI!")
 
     print("\n--- Logic Manifestation: FULLY OPERATIONAL ---\n")
 
 if __name__ == "__main__":
-    test_logic()
+    asyncio.run(test_logic())

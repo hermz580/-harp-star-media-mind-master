@@ -19,19 +19,35 @@ class DeepScanner:
         self.assets = []
         self.code_fingerprints = []
 
+    def _extract_clusters(self, content: str) -> List[str]:
+        """Simplified logic clustering for Recursive Code Mapping"""
+        clusters = []
+        lines = content.split('\n')
+        for line in lines:
+            if 'class ' in line or 'def ' in line or 'function ' in line:
+                clusters.append(line.strip())
+        return clusters
+
     def scan(self) -> Dict[str, Any]:
         logger.info(f"🚀 Initializing Deep Scan of {self.root_path}")
         
-        # Scan for context (READMEs, documentation, project summaries)
-        for path in self.root_path.rglob('*.md'):
-            if 'node_modules' not in str(path) and '.git' not in str(path):
+        # Scan for context (READMEs, documentation, project summaries, text files)
+        # [Update 51: Universal Media Ingester (Text/Doc Focus)]
+        context_exts = ('.md', '.txt', '.py', '.js', '.html', '.css', '.pdf')
+        for path in self.root_path.rglob('*'):
+            if path.suffix.lower() in context_exts and 'node_modules' not in str(path) and '.git' not in str(path):
                 try:
-                    with open(path, 'r', encoding='utf-8') as f:
-                        content = f.read(2000) # Get first 2k chars for context
-                        self.context_files.append({
-                            "path": str(path.relative_to(self.root_path)),
-                            "snippet": content
-                        })
+                    # PDF Stub logic
+                    if path.suffix.lower() == '.pdf':
+                        content = f"[Apex 51] PDF DNA: {path.name} (Binary content - awaiting OCR/Whisper sync)"
+                    else:
+                        with open(path, 'r', encoding='utf-8') as f:
+                            content = f.read(2000) # Get first 2k chars for context
+
+                    self.context_files.append({
+                        "path": str(path.relative_to(self.root_path)),
+                        "snippet": content
+                    })
                 except:
                     continue
 
@@ -45,16 +61,19 @@ class DeepScanner:
                     "size": path.stat().st_size
                 })
 
+        # [Update 3: Recursive Code Mapping]
         # Scan for Project DNA (package.json, setup files, main entries)
-        dna_files = ['package.json', 'requirements.txt', 'Dockerfile', 'main.py', 'index.html']
+        dna_files = ['package.json', 'requirements.txt', 'Dockerfile', 'main.py', 'index.html', 'AGENTS.md']
         for dna in dna_files:
             dna_path = self.root_path / dna
             if dna_path.exists():
                 try:
                     with open(dna_path, 'r', encoding='utf-8') as f:
+                        content = f.read(2000)
                         self.code_fingerprints.append({
                             "file": dna,
-                            "content": f.read(1000)
+                            "content": content,
+                            "logic_clusters": self._extract_clusters(content)
                         })
                 except:
                     continue
@@ -90,18 +109,60 @@ class BrandSynthesisEngine:
         self.scanner = DeepScanner(root_path)
         self.intelligence = AssetIntelligence()
         self.api_key = os.getenv("GEMINI_API_KEY")
-        genai.configure(api_key=self.api_key)
-        self.model = genai.GenerativeModel('gemini-1.5-pro')
+        if self.api_key:
+            genai.configure(api_key=self.api_key)
+            self.model = genai.GenerativeModel('gemini-1.5-pro')
+        else:
+            self.model = None
+
+    def analyze_asset_vision(self, file_path: Path) -> str:
+        """Update 2: Vision DNA Extraction"""
+        if not self.api_key:
+            return "Vision analysis skipped: No API Key."
+
+        try:
+            with open(file_path, "rb") as f:
+                image_data = f.read()
+
+            # Simple heuristic to avoid uploading huge files for basic DNA
+            if len(image_data) > 4 * 1024 * 1024:
+                return "File too large for fast vision sync."
+
+            model = genai.GenerativeModel('gemini-1.5-flash')
+            response = model.generate_content([
+                "Describe the visual style, dominant colors, and mood of this brand asset for DNA extraction. Be concise.",
+                {"mime_type": "image/jpeg", "data": image_data}
+            ])
+            return response.text
+        except Exception as e:
+            logger.error(f"Vision analysis failed for {file_path.name}: {e}")
+            return f"Vision error: {str(e)}"
 
     def manifest_brand(self, external_urls: List[str] = []) -> Dict[str, Any]:
         """Deep Synthesis: Scan, Scrap, and Manifest"""
         # 1. Internal Physical Discovery
         discovery_data = self.scanner.scan()
         
+        # 1b. Enhanced Vision Sync (Update 2)
+        vision_insights = []
+        asset_exts = ('.png', '.jpg', '.jpeg', '.webp')
+        # Only analyze first 3 assets to keep sync fast
+        count = 0
+        for asset in discovery_data.get('assets', []):
+            if any(asset['path'].lower().endswith(ext) for ext in asset_exts):
+                full_path = Path(self.root_path) / asset['path']
+                if full_path.exists():
+                    insight = self.analyze_asset_vision(full_path)
+                    vision_insights.append({"asset": asset['path'], "insight": insight})
+                    count += 1
+                    if count >= 3: break
+
         # 2. External Intelligence Discovery
         external_context = []
         for url in external_urls:
-            external_context.append(self.intelligence.scrape_url(url))
+            # Handle if url is a dict or string
+            actual_url = url['url'] if isinstance(url, dict) else url
+            external_context.append(self.intelligence.scrape_url(actual_url))
 
         # 3. Autonomous Manifestation Prompt
         synthesis_prompt = f"""
@@ -111,6 +172,7 @@ class BrandSynthesisEngine:
         - Assets: {json.dumps(discovery_data['assets'])}
         - Project DNA: {json.dumps(discovery_data['dna_captured'])}
         - Context Snippets: {json.dumps(discovery_data['context_snippets'])}
+        - Vision Insights: {json.dumps(vision_insights)}
         
         EXTERNAL CONTEXT:
         {json.dumps(external_context)}
@@ -124,13 +186,16 @@ class BrandSynthesisEngine:
         Return ONLY a JSON object with keys: brand_identity, active_focus, suggested_workflows, brand_manifest_json.
         """
         
+        if not self.model:
+            return {"error": "Generative model not configured. Missing API Key."}
+
         try:
             response = self.model.generate_content(synthesis_prompt)
             result = json.loads(response.text.strip('`json\n'))
             
             # Persist to profile
-            profile_path = Path(self.root_path) / "brand-engine" / "brand_brain" / "brand_profile.json"
-            if profile_path.exists():
+            profile_path = Path(self.root_path) / "brand_brain" / "brand_profile.json"
+            if profile_path.parent.exists():
                 with open(profile_path, 'w') as f:
                     json.dump(result['brand_manifest_json'], f, indent=2)
             
