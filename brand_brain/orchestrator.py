@@ -152,8 +152,41 @@ class MasterOrchestrator:
     def _load_vbrain(self) -> Dict:
         if self.vbrain_path.exists():
             with open(self.vbrain_path, 'r') as f:
-                return json.load(f)
-        return {"learned_patterns": [], "context_map": {}, "agent_integrations": {}, "workflows": [], "inspiration_urls": []}
+                data = json.load(f)
+                if "student_activities" not in data:
+                    data["student_activities"] = []
+                return data
+        return {"learned_patterns": [], "context_map": {}, "agent_integrations": {}, "workflows": [], "inspiration_urls": [], "student_activities": []}
+
+    def add_student_activity(self, activity_data: Dict[str, Any]):
+        """Adds a student activity (like a class schedule or assignment) to the V-Brain."""
+        if "student_activities" not in self.vbrain:
+            self.vbrain["student_activities"] = []
+
+        # Add a unique ID to the activity
+        activity_data["id"] = str(uuid.uuid4())[:8]
+        self.vbrain["student_activities"].append(activity_data)
+        self.save_vbrain()
+        logger.info(f"📅 Added student activity: {activity_data.get('title', 'Unknown')}")
+        return activity_data
+
+    async def autonomous_tick(self):
+        """Automatically called by the scheduler to process pending workflows."""
+        logger.info("⚡ Autonomous Tick: Scanning for pending workflows...")
+
+        # Propose new workflows if the bucket has items
+        self.process_bucket()
+
+        # Find the first pending workflow
+        pending_workflows = [w_id for w_id, wf in self.active_workflows.items() if wf.get("status") == "pending"]
+
+        if pending_workflows:
+            target_workflow_id = pending_workflows[0]
+            logger.info(f"🚀 Autonomous Mode: Executing workflow {target_workflow_id}")
+            # Mocking the execution process as it might normally be async
+            self.execute_workflow(target_workflow_id)
+        else:
+            logger.info("💤 Autonomous Mode: No pending workflows to execute.")
 
     def save_vbrain(self):
         with open(self.vbrain_path, 'w') as f:
@@ -221,15 +254,26 @@ class MasterOrchestrator:
         proposals = []
         asset_exts = ('.png', '.jpg', '.jpeg', '.mp4', '.mov', '.webp')
         
+        # Check if we have student activities to incorporate
+        activities = self.vbrain.get("student_activities", [])
+        activity_context = f" (Focusing on {len(activities)} upcoming student activities)" if activities else ""
+
         for path in self.bucket_path.glob('*'):
             if path.suffix.lower() in asset_exts and 'processed' not in str(path):
                 w_id = str(uuid.uuid4())[:8]
                 # Default to a free workflow if it's an image
                 is_free = path.suffix.lower() in ('.png', '.jpg', '.jpeg', '.webp')
                 
-                desc = f"Targeting {path.stem}. Utilizing Hugging Face Liaison for free creative synthesis."
+                desc = f"Targeting {path.stem}. Utilizing Hugging Face Liaison for free creative synthesis.{activity_context}"
                 if user_spark:
                     desc += f" Context: User requested '{user_spark}'."
+
+                # Mock plan for execution
+                plan = {
+                    "title": f"Auto-Generated Post for {path.name}",
+                    "story": f"Here is the story for {path.name}. Made with Harp*Star.",
+                    "tasks": [("Narrator", "Drafted story"), ("Producer", "Finalized render")]
+                }
 
                 proposals.append({
                     "id": w_id,
@@ -237,7 +281,8 @@ class MasterOrchestrator:
                     "type": "No-Key Manifestation" if is_free else "Premium Production",
                     "description": desc,
                     "status": "pending",
-                    "free": is_free
+                    "free": is_free,
+                    "plan": plan
                 })
                 self.active_workflows[w_id] = proposals[-1]
         

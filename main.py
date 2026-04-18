@@ -7,6 +7,7 @@ import uvicorn
 import shutil
 from typing import List, Dict, Any
 from brand_brain.orchestrator import MasterOrchestrator
+from brand_brain.schedule import OrchestratorScheduler
 
 app = FastAPI(title="Harp * Star Media Mind Master")
 
@@ -42,6 +43,11 @@ app.add_middleware(
 # Initialize Orchestrator
 ROOT_DIR = Path(__file__).parent.parent
 orch = MasterOrchestrator(str(ROOT_DIR))
+scheduler = OrchestratorScheduler(orch)
+
+@app.on_event("shutdown")
+def shutdown_event():
+    scheduler.stop_autonomous_mode()
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
@@ -125,6 +131,28 @@ async def add_root(path_data: dict = Body(...)):
         raise HTTPException(status_code=400, detail="Path is required")
     orch.add_discovery_path(path)
     return {"status": "success", "roots": orch.discovery_paths}
+
+@app.post("/api/activities/add")
+async def add_activity(activity_data: dict = Body(...)):
+    if not activity_data.get("title"):
+        raise HTTPException(status_code=400, detail="Activity title is required")
+    activity = orch.add_student_activity(activity_data)
+    return {"status": "success", "activity": activity}
+
+@app.get("/api/activities/list")
+async def list_activities():
+    return {"status": "success", "activities": orch.vbrain.get("student_activities", [])}
+
+@app.post("/api/schedule/enable")
+async def enable_schedule(config: dict = Body(default={})):
+    interval = config.get("interval_seconds", 60)
+    scheduler.start_autonomous_mode(interval_seconds=interval)
+    return {"status": "success", "message": f"Autonomous mode enabled. Ticking every {interval}s."}
+
+@app.post("/api/schedule/disable")
+async def disable_schedule():
+    scheduler.stop_autonomous_mode()
+    return {"status": "success", "message": "Autonomous mode disabled."}
 
 @app.post("/api/sync")
 async def execute_sync():

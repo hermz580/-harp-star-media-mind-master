@@ -56,6 +56,14 @@ def test_logic():
         else:
             print("[Security] Security strings missing from UI!")
 
+    # 7. Test Student Activities
+    test_activity = {"title": "Math Class", "time": "10:00 AM"}
+    orch.add_student_activity(test_activity)
+    if any(act.get("title") == "Math Class" for act in orch.vbrain.get("student_activities", [])):
+        print("[Data] Student activity added and verified in V-Brain.")
+    else:
+        print("[Data] Student activity addition failed.")
+
     print("\n--- Logic Manifestation: FULLY OPERATIONAL ---\n")
 
 if __name__ == "__main__":
