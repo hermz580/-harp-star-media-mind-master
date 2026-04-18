@@ -11,3 +11,4 @@ requests
 jinja2
 python-multipart
 aiofiles
+pillow

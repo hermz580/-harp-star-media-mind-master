@@ -93,6 +93,14 @@ async def upload_to_bucket(files: List[UploadFile] = File(...)):
         file_path = orch.bucket_path / file.filename
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
+
+        # Check for racism
+        if file_path.suffix.lower() in ('.png', '.jpg', '.jpeg', '.webp'):
+            is_racist = orch.check_image_for_racism(str(file_path))
+            if is_racist:
+                os.remove(file_path)
+                raise HTTPException(status_code=400, detail=f"File {file.filename} contains racist content and is rejected.")
+
         uploaded.append(file.filename)
     return {"status": "success", "uploaded": uploaded}
 

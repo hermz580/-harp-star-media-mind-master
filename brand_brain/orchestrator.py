@@ -8,6 +8,8 @@ from typing import Dict, List, Any, Optional
 from .synthesis import BrandSynthesisEngine, DeepScanner
 from .engine import BrandContentEngine
 import uuid
+import google.generativeai as genai
+import PIL.Image
 
 logger = logging.getLogger(__name__)
 
@@ -279,3 +281,21 @@ class MasterOrchestrator:
             "integration_time": time.time()
         }
         self.save_vbrain()
+
+    def check_image_for_racism(self, file_path: str) -> bool:
+        """Analyzes the image to determine if it contains racist content.
+        Returns True if racist content is detected, False otherwise."""
+        try:
+            genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+            model = genai.GenerativeModel('gemini-1.5-flash')
+            with PIL.Image.open(file_path) as img:
+                response = model.generate_content([
+                    "Does this image contain racist content? Answer only 'Yes' or 'No'.",
+                    img
+                ])
+            text = response.text.strip().lower()
+            return 'yes' in text
+        except Exception as e:
+            logger.error(f"Error checking image for racism: {e}")
+            # Do not fail all uploads on API error. Log the failure and allow.
+            return False
