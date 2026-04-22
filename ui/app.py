@@ -1,7 +1,5 @@
 import streamlit as st
-import os
 import sys
-import json
 from pathlib import Path
 
 # Add brand-engine directory to path
@@ -11,8 +9,6 @@ sys.path.append(str(BRAND_ENGINE_DIR))
 # Also add the actual root for scraping context
 ROOT_DIR = BRAND_ENGINE_DIR.parent
 
-from brand_brain.synthesis import BrandSynthesisEngine
-from brand_brain.engine import BrandContentEngine
 from brand_brain.orchestrator import MasterOrchestrator
 
 st.set_page_config(page_title="Phoenix Master Terminal", page_icon="🧬", layout="wide")
