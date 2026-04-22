@@ -90,10 +90,12 @@ async def add_platform(name: str = Body(..., embed=True), config: dict = Body(..
 async def upload_to_bucket(files: List[UploadFile] = File(...)):
     uploaded = []
     for file in files:
-        file_path = orch.bucket_path / file.filename
+        # Sanitize filename to prevent path traversal
+        safe_filename = os.path.basename(file.filename)
+        file_path = orch.bucket_path / safe_filename
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
-        uploaded.append(file.filename)
+        uploaded.append(safe_filename)
     return {"status": "success", "uploaded": uploaded}
 
 @app.post("/api/workflow/propose")
