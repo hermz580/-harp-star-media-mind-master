@@ -6,6 +6,7 @@ from typing import Dict, List, Any
 import requests
 from bs4 import BeautifulSoup
 import google.generativeai as genai
+from concurrent.futures import ThreadPoolExecutor
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -100,8 +101,9 @@ class BrandSynthesisEngine:
         
         # 2. External Intelligence Discovery
         external_context = []
-        for url in external_urls:
-            external_context.append(self.intelligence.scrape_url(url))
+        if external_urls:
+            with ThreadPoolExecutor(max_workers=min(10, len(external_urls))) as executor:
+                external_context = list(executor.map(self.intelligence.scrape_url, external_urls))
 
         # 3. Autonomous Manifestation Prompt
         synthesis_prompt = f"""
